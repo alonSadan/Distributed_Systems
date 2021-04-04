@@ -57,25 +57,25 @@ public class Local {
 
     public static boolean managerExists(Ec2Client ec2) {
 
-        // Create a Filters to find a running manager
+    // Create a Filters to find a running manager
 
-        Filter runningFilter = Filter.builder()
-                .name("instance-state-name")
-                .values("running")
-                .build();
+    Filter runningFilter = Filter.builder()
+    .name("instance-state-name")
+    .values("running")
+    .build();
 
-        Filter managerFilter  = Filter.builder()
-                .name("tag:job")
-                .values("manager")
-                .build();
+    Filter managerFilter  = Filter.builder()
+    .name("tag:job")
+    .values("manager")
+    .build();
 
-        //Create a DescribeInstancesRequest
-        DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(managerFilter,runningFilter)
-                .build();
+    //Create a DescribeInstancesRequest
+    DescribeInstancesRequest request = DescribeInstancesRequest.builder()
+        .filters(managerFilter,runningFilter)
+        .build();
 
-        // Find the running manager instances
-        DescribeInstancesResponse response = ec2.describeInstances(request);
+    // Find the running manager instances
+    DescribeInstancesResponse response = ec2.describeInstances(request);
 
 
 
