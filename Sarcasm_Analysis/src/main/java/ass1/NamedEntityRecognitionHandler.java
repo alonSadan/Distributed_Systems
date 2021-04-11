@@ -35,7 +35,7 @@ public class NamedEntityRecognitionHandler {
         NERPipeline.annotate(document);
         // these are all the sentences in this document
         // a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
-        List<CoreMap> sentencgites = document.get(SentencesAnnotation.class);
+        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
 
         String entities = "";
         for (CoreMap sentence : sentences) {

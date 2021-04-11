@@ -1,4 +1,7 @@
-C:\Users\yotam\Desktop\aws_alon\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\SendReceiveMessages.java
-C:\Users\yotam\Desktop\aws_alon\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\CreateInstance.java
-C:\Users\yotam\Desktop\aws_alon\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\Local.java
-C:\Users\yotam\Desktop\aws_alon\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\S3ObjectOperations.java
+C:\Users\alons\studies\distributed_systems\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\Worker.java
+C:\Users\alons\studies\distributed_systems\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\CreateInstance.java
+C:\Users\alons\studies\distributed_systems\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\Local.java
+C:\Users\alons\studies\distributed_systems\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\SendReceiveMessages.java
+C:\Users\alons\studies\distributed_systems\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\SentimentAnalysisHandler.java
+C:\Users\alons\studies\distributed_systems\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\S3ObjectOperations.java
+C:\Users\alons\studies\distributed_systems\Distributed_Systems\Sarcasm_Analysis\src\main\java\ass1\NamedEntityRecognitionHandler.java
