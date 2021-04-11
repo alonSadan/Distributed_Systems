@@ -23,8 +23,13 @@ package ass1;
 // snippet-start:[ec2.java2.create_instance.complete]
 
 // snippet-start:[ec2.java2.create_instance.import]
+
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
+import software.amazon.awssdk.protocols.query.*;
+
+
+import java.util.Base64;
 // snippet-end:[ec2.java2.create_instance.import]
 
 /**
@@ -35,41 +40,54 @@ public class CreateInstance {
         final String USAGE =
                 "To run this example, supply an instance name and AMI image id\n" +
                         "Both values can be obtained from the AWS Console\n" +
-                        "Ex: CreateInstance <instance-name> <ami-image-id>\n";
-// test1
-// ami-0062dd78ec1ecd019
-        if (args.length != 2) {
+                        "another optional argument is the job of the instance. for example manager\n" +
+                        "Ex: CreateInstance <instance-name> <ami-image-id> <job>\n";
+
+        if (args.length != 2 && args.length != 3) {
             System.out.println(USAGE);
             System.exit(1);
         }
+
         String name = args[0];
         String amiId = args[1];
+        String job = "";
+        if (args.length == 3)
+            job = args[2];
+
         // snippet-start:[ec2.java2.create_instance.main]
         Ec2Client ec2 = Ec2Client.create();
 
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
                 .instanceType(InstanceType.T2_MICRO)
-                //.securityGroupIds("sg-92053d9c")
                 .imageId(amiId)
                 .maxCount(1)
-                .keyName("AWS_Alon-Yotam")
                 .minCount(1)
-                //.userData(Base64.getEncoder().encodeToString(""/*your USER DATA script string*/.getBytes()))
+                .userData(Base64.getEncoder().encodeToString("".getBytes()))
                 .build();
+
         RunInstancesResponse response = ec2.runInstances(runRequest);
 
         String instanceId = response.instances().get(0).instanceId();
 
-        Tag tag = Tag.builder()
-                .key("job")
-                .value(name)
-                .build();
+        addTag("Name", name, instanceId, amiId, ec2);
 
-//            String reservation_id = run_response.getReservation().getInstances().get(0).getInstanceId();
-//
-//            CreateTagsRequest tag_request = new CreateTagsRequest()
-//                    .withResources(reservation_id)
-//                    .withTags(tag);
+        if (job != "") {
+            addTag("job", job, instanceId, amiId, ec2);
+        }
+
+        // snippet-end:[ec2.java2.create_instance.main]
+        System.out.println("Done!");
+    }
+
+
+// snippet-end:[ec2.java2.create_instance.complete]
+
+    public static void addTag(String key, String value, String instanceId, String amiId, Ec2Client ec2) {
+
+        Tag tag = Tag.builder()
+                .key(key)
+                .value(value)
+                .build();
 
         CreateTagsRequest tagRequest = CreateTagsRequest.builder()
                 .resources(instanceId)
@@ -79,16 +97,13 @@ public class CreateInstance {
         try {
             ec2.createTags(tagRequest);
             System.out.printf(
-                    "Successfully started EC2 instance %s based on AMI %s",
-                    instanceId, amiId);
+                    "Successfully added tag with key: %s and value: %s\n",
+                    key, value);
 
         } catch (Ec2Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
-        // snippet-end:[ec2.java2.create_instance.main]
-        System.out.println("Done!");
     }
-}
-// snippet-end:[ec2.java2.create_instance.complete]
 
+}

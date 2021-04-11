@@ -2,6 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="efd24470-f51f-4f0f-9fa3-7e9a7b7de418" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Sarcasm_Analysis/AWS.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/ass1/Local.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/ass1/S3ObjectOperations.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/ass1/SendReceiveMessages.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Sarcasm_Analysis/target/classes/ass1/CreateInstance.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Sarcasm_Analysis/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/.idea/aws.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/ass1/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/CreateInstance.java" beforeDir="false" afterPath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/ass1/CreateInstance.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/Local.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/S3ObjectOperations.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/SendReceiveMessages.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/src/main/java/com/example/ec2/ec2.iml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/target/AWS-1.0-SNAPSHOT.jar" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/target/classes/com/example/ec2/CreateInstance.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Sarcasm_Analysis/target/maven-archiver/pom.properties" beforeDir="false" />
