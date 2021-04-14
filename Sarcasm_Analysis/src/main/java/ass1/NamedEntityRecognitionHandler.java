@@ -15,20 +15,18 @@ import edu.stanford.nlp.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
-
+import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 public class NamedEntityRecognitionHandler {
-    private Properties props;
-    private StanfordCoreNLP NERPipeline;
-    private Annotation document;
-
-    public NamedEntityRecognitionHandler() {
-        props = new Properties();
-        props.put("annotators", "tokenize , ssplit, pos, lemma, ner");
-        NERPipeline = new StanfordCoreNLP(props);
-    }
 
     public String getEntities(String review) {
+        Annotation document;
+        StanfordCoreNLP NERPipeline;
+        Properties props;
+
+        props = new Properties();
+        props.put("annotators", "tokenize,ssplit,pos,lemma,ner");
+        NERPipeline = new StanfordCoreNLP(props);
         // create an empty Annotation just with the given text
         document = new Annotation(review);
         // run all Annotators on this text
@@ -46,7 +44,10 @@ public class NamedEntityRecognitionHandler {
                 String word = token.get(TextAnnotation.class);
                 // this is the NER label of the token
                 String ne = token.get(NamedEntityTagAnnotation.class);
-                entities = entities + (word + ":" + ne + ", ");
+                if(!ne.equals("O")) {
+                    System.out.println("ne is :" + ne);
+                    entities = entities + (word + ":" + ne + ", ");
+                }
             }
         }
 

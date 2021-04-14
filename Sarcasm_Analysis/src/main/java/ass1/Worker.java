@@ -19,8 +19,8 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
 
 public class Worker {
 
-    private static SentimentAnalysisHandler sentimentAnalysisHandler = new SentimentAnalysisHandler();
-    private static NamedEntityRecognitionHandler namedEntityRecognitionHandler = new NamedEntityRecognitionHandler();
+    public static SentimentAnalysisHandler sentimentAnalysisHandler = new SentimentAnalysisHandler();
+    public static NamedEntityRecognitionHandler namedEntityRecognitionHandler = new NamedEntityRecognitionHandler();
     private static boolean stop;
 
     public static void main(String[] args) {
@@ -32,28 +32,34 @@ public class Worker {
         // with the out put of the operation.
 
         ReceiveMessageResponse receiveMessageResponse;
+for(int i = 0  ; i < 10 ; i++ ){
+    System.out.println(String.valueOf(i));
+//        while (!shouldStop()) {
+            String jobQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
+            String answersQueueURL = SendReceiveMessages.getQueueURLByName("answers");
 
-        while (!shouldStop()) {
-            String jobQueueURL = SendReceiveMessages.getQueueURLByName("JOB_QUEUE");
-            String answersQueueURL = SendReceiveMessages.getQueueURLByName("ANSWERS_QUEUE");
-
-            Message jobMessage = SendReceiveMessages.receive(jobQueueURL, "job");
+            Message jobMessage = SendReceiveMessages.receive(jobQueueURL, "job","reviewID");
 
             if (jobMessage == null) {
-                System.err.println("no message in queue");
+                System.out.println("no message in queue");
                 continue;
             }
 
             String job = SendReceiveMessages.extractAttribute(jobMessage, "job");
+            if(job == null) {
+                System.out.println("nabcsndlkasndlka");
+            }
+
+
             final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
 
-            MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(jobMessage.attributes().get("reviewId"));
+            MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(String.valueOf(jobMessage.attributes().get("reviewId")));
             messageAttributes.put("reviewId", reviewID);
 
             MessageAttributeValue jobAttributeValue = SendReceiveMessages.createStringAttributeValue(job);
             messageAttributes.put("job", jobAttributeValue);
 
-            if (job == "NER") {
+            if (job.equals("NER")) {
 
                 String ner = namedEntityRecognitionHandler.getEntities(jobMessage.body());
                 SendReceiveMessages.send(answersQueueURL,
@@ -63,9 +69,10 @@ public class Worker {
                 SendReceiveMessages.deleteMessage(jobQueueURL, jobMessage);
             }
 
-            if (job == "sentiment") {
+            if (job.equals("sentiment")) {
+                int sentiment = sentimentAnalysisHandler.findSentiment(jobMessage.body());
                 SendReceiveMessages.send(answersQueueURL,
-                        "sentiment defined in a message attribute with key 'sentiment'",
+                        String.valueOf(sentiment),
                         messageAttributes);
 
                 SendReceiveMessages.deleteMessage(jobQueueURL, jobMessage);

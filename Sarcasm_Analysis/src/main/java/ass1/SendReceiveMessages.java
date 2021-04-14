@@ -75,13 +75,14 @@ public class SendReceiveMessages {
 
 
     public static String extractAttribute(Message message, String attributeName) {
-        if (!message.attributes().isEmpty()) {
+        if (!message.messageAttributes().isEmpty()) {
             Map<String, MessageAttributeValue> messageAttributes = message.messageAttributes();
             MessageAttributeValue attributeValue = messageAttributes.get(attributeName);
             if (attributeValue != null) {
                 return attributeValue.stringValue();
             }
         }
+
         return null;
     }
 
