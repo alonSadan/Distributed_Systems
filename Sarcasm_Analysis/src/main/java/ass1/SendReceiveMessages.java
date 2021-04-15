@@ -6,19 +6,20 @@ import software.amazon.awssdk.services.sqs.model.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 // snippet-end:[sqs.java2.send_recieve_messages.import]
 // snippet-start:[sqs.java2.send_recieve_messages.main]
 public class SendReceiveMessages {
-    private static final String QUEUE_NAME = "testQueue" + new Date().getTime();
+    //    private static final String QUEUE_NAME = "testQueue" + new Date().getTime();
     private static final SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
 
-    public static void send(String queueUrl, String messageBody) {
+    public static void send(String queueUrl, String messageBody, Map<String, MessageAttributeValue> attributes) {
 
         SendMessageRequest send_msg_request = SendMessageRequest.builder()
                 .queueUrl(queueUrl)
                 .messageBody(messageBody)
-                .delaySeconds(5)
+                .messageAttributes(attributes)
                 .build();
         sqs.sendMessage(send_msg_request);
     }
@@ -40,36 +41,69 @@ public class SendReceiveMessages {
 //                .build();
 //        sqs.sendMessageBatch(send_batch_request);
 
-    public static List<Message> receive(String queueUrl) {
+    public static Message receive(String queueUrl, String... attributeNames) { //returns one message by default
         ReceiveMessageRequest receiveRequest = ReceiveMessageRequest.builder()
+                .messageAttributeNames(attributeNames)
                 .queueUrl(queueUrl)
                 .build();
         List<Message> messages = sqs.receiveMessage(receiveRequest).messages();
-        return messages;
+        if (!messages.isEmpty()) {
+            return messages.get(0);
+        }
+
+        return null;
     }
 
 
     public static String createSQS(String name) {
-        final String QUEUE_NAME = name + new Date().getTime();
         SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
 
-        try {
-            CreateQueueRequest request = CreateQueueRequest.builder()
-                    .queueName(QUEUE_NAME)
-                    .build();
-            CreateQueueResponse create_result = sqs.createQueue(request);
-        } catch (QueueNameExistsException e) {
-            throw e;
+        CreateQueueRequest request = CreateQueueRequest.builder()
+                .queueName(name)
+                .build();
 
-        }
+        return sqs.createQueue(request).queueUrl();
+    }
+
+    public static String getQueueURLByName(String name) {
 
         GetQueueUrlRequest getQueueRequest = GetQueueUrlRequest.builder()
-                .queueName(QUEUE_NAME)
+                .queueName(name)
                 .build();
-        String queueUrl = sqs.getQueueUrl(getQueueRequest).queueUrl();
-        return queueUrl;
+        return sqs.getQueueUrl(getQueueRequest).queueUrl();
     }
-        // delete messages from the queue
+
+
+    public static String extractAttribute(Message message, String attributeName) {
+        if (!message.messageAttributes().isEmpty()) {
+            Map<String, MessageAttributeValue> messageAttributes = message.messageAttributes();
+            MessageAttributeValue attributeValue = messageAttributes.get(attributeName);
+            if (attributeValue != null) {
+                return attributeValue.stringValue();
+            }
+        }
+
+        return null;
+    }
+
+
+    public static MessageAttributeValue createStringAttributeValue(String value) {
+        return MessageAttributeValue
+                .builder()
+                .dataType("String")
+                .stringValue(value)
+                .build();
+    }
+
+    public static void deleteMessage(String queueURL, Message message) {
+        DeleteMessageRequest deleteRequest = DeleteMessageRequest.builder()
+                .queueUrl(queueURL)
+                .receiptHandle(message.receiptHandle())
+                .build();
+        sqs.deleteMessage(deleteRequest);
+    }
+
+    // delete messages from the queue
 //        for (Message m : messages) {
 //            System.out.println(m.body());
 //           DeleteMessageRequest deleteRequest = DeleteMessageRequest.builder()
@@ -78,4 +112,4 @@ public class SendReceiveMessages {
 //                 .build();
 //            sqs.deleteMessage(deleteRequest);
 //        }
-    } //end of class
+} //end of class

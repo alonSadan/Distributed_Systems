@@ -30,7 +30,7 @@ public class Local { //args[] == paths to input files
         String keys[] = S3ObjectOperations.PutObjects(args, bucketName);
         String SendQueueUrl = SendReceiveMessages.createSQS("localSendQueue");
         for (String key : keys) {
-            SendReceiveMessages.send(SendQueueUrl, bucketName + ':' + key);
+            SendReceiveMessages.send(SendQueueUrl, bucketName + ':' + key, null);
         }
 
         //wait for done messages
@@ -39,9 +39,10 @@ public class Local { //args[] == paths to input files
         int counter = 0;
         List<Message> messages = null;
         while (!stop) { //busy wait until we get a done msg
-            messages = SendReceiveMessages.receive(localRecieveQueueUrl);
-            if (!messages.isEmpty())
+            Message message = SendReceiveMessages.receive(localRecieveQueueUrl);
+            if (message == null) {
                 stop = true;
+            }
         }
 
         for (Message message : messages) {
