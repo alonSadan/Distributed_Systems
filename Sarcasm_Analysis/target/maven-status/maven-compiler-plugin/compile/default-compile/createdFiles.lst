@@ -1,1 +1,7 @@
-com\example\ec2\CreateInstance.class
+ass1\SentimentAnalysisHandler.class
+ass1\Worker.class
+ass1\SendReceiveMessages.class
+ass1\Local.class
+ass1\NamedEntityRecognitionHandler.class
+ass1\S3ObjectOperations.class
+ass1\CreateInstance.class
