@@ -23,8 +23,8 @@ public class Worker {
         // with the out put of the operation.
 
         ReceiveMessageResponse receiveMessageResponse;
-for(int i = 0  ; i < 10 ; i++ ){
-    System.out.println(String.valueOf(i));
+        for(int i = 0  ; i < 10 ; i++ ){
+            System.out.println(String.valueOf(i));
 //        while (!shouldStop()) {
             String jobQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
             String answersQueueURL = SendReceiveMessages.getQueueURLByName("answers");

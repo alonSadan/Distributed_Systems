@@ -38,29 +38,28 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
-import java.util.Date;
 import java.util.Random;
 
 
-public class S3ObjectOperations {
+public class S3ObjectOperations_yotam {
 
     private static S3Client s3;
 
-    public static String[] PutObjects(String[] files, String bucketName) throws IOException {
-        String keys[] = new String[files.length];
-        for (int i = 0; i < files.length; ++i) {
-            keys[i] = PutObject(files[i], bucketName);
+    public static String[] PutObjects(String[] fileNames, String bucketName) throws IOException {
+        String keys[] = new String[fileNames.length];
+        for (int i = 0; i < fileNames.length; ++i) {
+            if(fileNames[i].length() > 1)
+                keys[i] = PutObject(fileNames[i], bucketName);
         }
 
         return keys;
     }
 
-    public static String PutObject(String filePath, String bucket) throws IOException {
+    public static String PutObject(String fileName, String bucket) throws IOException {
         Region region = Region.US_EAST_1;
         s3 = S3Client.builder().region(region).build();
 
-        String fileName = filePath; //"C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\input files\\B000EVOSE4.txt";
-        String key = String.valueOf(new Date().getTime());
+        String key = fileName; //B000EVOSE4.txt";
 
         // Put Object
         s3.putObject(PutObjectRequest.builder().bucket(bucket).key(key)
@@ -142,7 +141,7 @@ public class S3ObjectOperations {
 
 
     public static String CreateBucket(String bucket) {
-
+        s3 = S3Client.builder().region(Region.US_EAST_1).build();
         bucket = bucket + System.currentTimeMillis();
         s3.createBucket(CreateBucketRequest
                 .builder()

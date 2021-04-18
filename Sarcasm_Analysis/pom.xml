@@ -6,7 +6,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>AWS</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>11</version>
 
     <dependencyManagement>
         <dependencies>
@@ -17,6 +17,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+
             <dependency>
                 <groupId>edu.stanford.nlp</groupId>
                 <artifactId>stanford-corenlp</artifactId>
@@ -39,14 +41,14 @@
                 <version>0.23</version>
             </dependency>
 
-            <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
-            <!--            <dependency>-->
-            <!--                <groupId>com.amazonaws</groupId>-->
-            <!--                <artifactId>aws-java-sdk</artifactId>-->
-            <!--                <version>1.8.0</version>-->
-            <!--                <type>pom</type>-->
-            <!--                <scope>import</scope>-->
-            <!--            </dependency>-->
+<!--             https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
+<!--                        <dependency>-->
+<!--                            <groupId>com.amazonaws</groupId>-->
+<!--                            <artifactId>aws-java-sdk</artifactId>-->
+<!--                            <version>1.8.0</version>-->
+<!--                            <type>pom</type>-->
+<!--                            <scope>import</scope>-->
+<!--                        </dependency>-->
 
             <dependency>
                 <groupId>com.amazonaws</groupId>

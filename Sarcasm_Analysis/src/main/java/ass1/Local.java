@@ -6,12 +6,12 @@ import org.json.simple.parser.JSONParser;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 
 
 public class Local { //args[] == paths to input files
@@ -21,16 +21,36 @@ public class Local { //args[] == paths to input files
             System.exit(1);
         }
 
+        String n = "";
+        String [] inputs;
+        if (args[args.length - 1].equals("terminate")){
+            n = args[args.length - 2];
+            inputs = Arrays.copyOfRange(args, 0, args.length - 2);
+        }
+        else{
+            n = args[args.length - 1];
+            inputs = Arrays.copyOfRange(args, 0, args.length - 1);
+        }
+        
         Ec2Client ec2 = Ec2Client.create();
         if (!managerExists(ec2)) {
             CreateManager("manager1");
         }
 
+        final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
         String bucketName = S3ObjectOperations.CreateBucket("inputFiles");
-        String keys[] = S3ObjectOperations.PutObjects(args, bucketName);
+        String keys[] = S3ObjectOperations.PutObjects(inputs, bucketName);
         String SendQueueUrl = SendReceiveMessages.createSQS("localSendQueue");
         for (String key : keys) {
-            SendReceiveMessages.send(SendQueueUrl, bucketName + ':' + key, null);
+            MessageAttributeValue N = SendReceiveMessages.createStringAttributeValue(n);
+            messageAttributes.put("n", N);
+
+            MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue(bucketName);
+            messageAttributes.put("bucket", bucket);
+
+            MessageAttributeValue KEY = SendReceiveMessages.createStringAttributeValue(key);
+            messageAttributes.put("key", KEY);
+            SendReceiveMessages.send(SendQueueUrl, "",messageAttributes);
         }
 
         //wait for done messages
@@ -58,7 +78,7 @@ public class Local { //args[] == paths to input files
             String bucket = split[1];
             S3ObjectOperations.getObject(key, bucket, System.getProperty("user.dir") + "/output" + Integer.toString(counter));
         }
-        
+
     }
 
 

@@ -26,9 +26,6 @@ package ass1;
 
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.protocols.query.*;
-
 
 import java.util.Base64;
 // snippet-end:[ec2.java2.create_instance.import]
@@ -36,31 +33,29 @@ import java.util.Base64;
 /**
  * Creates an EC2 instance
  */
-public class CreateInstance {
+public class CreateInstance_yotam {
     public static void main(String[] args) {
         final String USAGE =
-                "To run this example, supply an instance name and AMI image id\n" +
+                "To run this example, supply an instance name, AMI image id and a script to run(can be empty)\n" +
                         "Both values can be obtained from the AWS Console\n" +
-                        "another optional argument is the job of the instance. for example manager\n" +
+                        "another optional argument is the job of the instance, for example manager\n" +
                         "Ex: CreateInstance <instance-name> <ami-image-id> <job>\n";
 
-        if (args.length != 2 && args.length != 3) {
+        if (args.length != 3 && args.length != 4 ) {
             System.out.println(USAGE);
             System.exit(1);
         }
 
         String name = args[0];
         String amiId = args[1];
+        String script = args[2];
         String job = "";
-        if (args.length == 3)
-            job = args[2];
+        if (args.length == 4)
+            job = args[3];
 
         // snippet-start:[ec2.java2.create_instance.main]
         Ec2Client ec2 = Ec2Client.create();
 
-        String script = "#!/bin/bash\n" +
-                "cd AWS-files\n" +
-                "java -cp 2-files-test-1.0-SNAPSHOT.jar CreateFile\n";
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
                 .instanceType(InstanceType.T2_MICRO)
                 .imageId(amiId)
