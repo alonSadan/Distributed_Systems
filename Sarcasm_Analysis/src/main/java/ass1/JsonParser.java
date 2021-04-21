@@ -26,40 +26,41 @@ public class JsonParser {
 
         //ObjectMapper objectMapper = new ObjectMapper();
         //Input iput = objectMapper.readValue(new File("example.json"), Input.class);
-        String pathToinput = "C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Sarcasm_Analysis\\input files\\B000EVOSE4.txt";
+        String pathToinput = "C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\src\\main\\java\\ass1\\input1.txt";
         JsonParser parser;
         try {
             parser = new JsonParser(pathToinput);
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
             return;
         }
 
         //example to print 3 reviews and than another 3
-        int i = 0;
-        while (parser.hasNextInput()) {
-            System.out.println(parser.getNextInput());
-            ++i;
-            if (i == 3) {
-                break;
-            }
-        }
-
-        i = 0;
-        while (parser.hasNextInput()) {
-            System.out.println(parser.getNextInput());
-            ++i;
-            if (i == 3) {
-                break;
-            }
-        }
+//        int i = 0;
+//        while (parser.hasNextInput()) {
+//            System.out.println(parser.getNextInput());
+//            ++i;
+//            if (i == 3) {
+//                break;
+//            }
+//        }
+//
+//        i = 0;
+//        while (parser.hasNextInput()) {
+//            System.out.println(parser.getNextInput());
+//            ++i;
+//            if (i == 3) {
+//                break;
+//            }
+//        }
         //example to get and print all authors of reviews in a single input.
-        List<Review> reviews = parser.getNextReviews();
-        Iterator<Review> reviewsIterator = reviews.iterator();
-        while (reviewsIterator.hasNext()){
-            System.out.println(reviewsIterator.next().getAuthor());
+        while (parser.hasNextInput()) {
+            List<Review> reviews = parser.getNextReviews();
+            Iterator<Review> reviewsIterator = reviews.iterator();
+            while (reviewsIterator.hasNext()) {
+                System.out.println(reviewsIterator.next().getAuthor());
+            }
         }
-
     }
 
     public Input getNextInput() {
@@ -73,8 +74,8 @@ public class JsonParser {
         return inputIterator.hasNext();
     }
 
-    public List<Review> getNextReviews(){
-        if (hasNextInput()){
+    public List<Review> getNextReviews() {
+        if (hasNextInput()) {
             return getNextInput().getReviews();
         }
 

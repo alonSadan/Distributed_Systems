@@ -4,18 +4,38 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.*;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static java.util.Collections.emptyList;
 
 // snippet-end:[sqs.java2.send_recieve_messages.import]
 // snippet-start:[sqs.java2.send_recieve_messages.main]
 public class SendReceiveMessages {
-    //    private static final String QUEUE_NAME = "testQueue" + new Date().getTime();
-    private static final SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
+    //    private static final String QUEUE_NAME = "testQueue" + new Date().getTime()
 
+    ////// inputtestttt
+    public static void main(String[] args) {
+        String localQueueURL = getQueueURLByName("localsendqueue");
+        Map<String, MessageAttributeValue> attributes = new HashMap();
+        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
+        MessageAttributeValue n = SendReceiveMessages.createStringAttributeValue("100");
+        attributes.put("n", n);
+
+        MessageAttributeValue key = SendReceiveMessages.createStringAttributeValue("input1.txt");
+        attributes.put("key", key);
+
+        MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue("inputtestttt");
+        attributes.put("bucket", bucket);
+        send(localQueueURL, "blah", attributes);
+
+        //terminateManager()
+    }
+
+    public static void terminateManager() {
+    
+    }
     public static void send(String queueUrl, String messageBody, Map<String, MessageAttributeValue> attributes) {
-
+        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
         SendMessageRequest send_msg_request = SendMessageRequest.builder()
                 .queueUrl(queueUrl)
                 .messageBody(messageBody)
@@ -42,18 +62,39 @@ public class SendReceiveMessages {
 //        sqs.sendMessageBatch(send_batch_request);
 
     public static Message receive(String queueUrl, String... attributeNames) { //returns one message by default
+        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
         ReceiveMessageRequest receiveRequest = ReceiveMessageRequest.builder()
                 .messageAttributeNames(attributeNames)
                 .queueUrl(queueUrl)
                 .build();
-        List<Message> messages = sqs.receiveMessage(receiveRequest).messages();
-        if (!messages.isEmpty()) {
-            return messages.get(0);
+        List<Message> allmessages = sqs.receiveMessage(receiveRequest).messages();
+        System.out.println("all messages: " + allmessages.size());
+        List<Message> filteredMessages = filterMessagesByAttributes(allmessages, attributeNames);
+        System.out.println("filtered messages: " + filteredMessages.size());
+        if (!filteredMessages.isEmpty()) {
+            return filteredMessages.get(0);
         }
-
         return null;
     }
 
+    public static List<Message> filterMessagesByAttributes(List<Message> messages, String... attributeNames) {
+        System.out.println("filterMessagesByAttributes");
+        List<Message> filteredMessages = new ArrayList<Message>();
+        boolean takeMessage;
+        for (Message message : messages) {
+            takeMessage = true;
+            for (String name : attributeNames) {
+                if (extractAttribute(message, name) == null) {
+                    takeMessage = false;
+                    break;
+                }
+            }
+            if (takeMessage) {
+                filteredMessages.add(message);
+            }
+        }
+        return filteredMessages;
+    }
 
     public static String createSQS(String name) {
         SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
@@ -66,7 +107,7 @@ public class SendReceiveMessages {
     }
 
     public static String getQueueURLByName(String name) {
-
+        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
         GetQueueUrlRequest getQueueRequest = GetQueueUrlRequest.builder()
                 .queueName(name)
                 .build();
@@ -96,6 +137,7 @@ public class SendReceiveMessages {
     }
 
     public static void deleteMessage(String queueURL, Message message) {
+        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
         DeleteMessageRequest deleteRequest = DeleteMessageRequest.builder()
                 .queueUrl(queueURL)
                 .receiptHandle(message.receiptHandle())

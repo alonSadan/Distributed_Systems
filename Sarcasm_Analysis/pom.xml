@@ -10,75 +10,81 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>2.5.10</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-
-            <dependency>
-                <groupId>edu.stanford.nlp</groupId>
-                <artifactId>stanford-corenlp</artifactId>
-                <version>3.9.2</version>
-            </dependency>
-            <dependency>
-                <groupId>edu.stanford.nlp</groupId>
-                <artifactId>stanford-corenlp</artifactId>
-                <version>3.9.2</version>
-                <classifier>models</classifier>
-            </dependency>
-            <dependency>
-                <groupId>de.jollyday</groupId>
-                <artifactId>jollyday</artifactId>
-                <version>0.4.7</version>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.efficient-java-matrix-library</groupId>
-                <artifactId>ejml</artifactId>
-                <version>0.23</version>
-            </dependency>
-
-<!--             https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
-<!--                        <dependency>-->
-<!--                            <groupId>com.amazonaws</groupId>-->
-<!--                            <artifactId>aws-java-sdk</artifactId>-->
-<!--                            <version>1.8.0</version>-->
-<!--                            <type>pom</type>-->
-<!--                            <scope>import</scope>-->
-<!--                        </dependency>-->
-
-            <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk</artifactId>
-                <version>1.8.7</version>
-            </dependency>
-
-
-            <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
-            <!--            <dependency>-->
-            <!--                <groupId>com.amazonaws</groupId>-->
-            <!--                <artifactId>aws-java-sdk</artifactId>-->
-            <!--                <version>1.11.991</version>-->
-            <!--            </dependency>-->
-
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>bom</artifactId>
+            <version>2.5.10</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
         </dependencies>
     </dependencyManagement>
+
+
+    <!--             https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
+    <!--                        <dependency>-->
+    <!--                            <groupId>com.amazonaws</groupId>-->
+    <!--                            <artifactId>aws-java-sdk</artifactId>-->
+    <!--                            <version>1.8.0</version>-->
+    <!--                            <type>pom</type>-->
+    <!--                            <scope>import</scope>-->
+    <!--                        </dependency>-->
+
+
+    <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
+    <!--            <dependency>-->
+    <!--                <groupId>com.amazonaws</groupId>-->
+    <!--                <artifactId>aws-java-sdk</artifactId>-->
+    <!--                <version>1.11.991</version>-->
+    <!--            </dependency>-->
+
+
     <dependencies>
+
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>ec2</artifactId>
             <version>2.5.10</version>
         </dependency>
+
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
         </dependency>
+
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sqs</artifactId>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>com.amazonaws</groupId>-->
+<!--            <artifactId>aws-java-sdk</artifactId>-->
+<!--            <version>1.8.12</version>-->
+<!--        </dependency>-->
+
+        <dependency>
+            <groupId>de.jollyday</groupId>
+            <artifactId>jollyday</artifactId>
+            <version>0.4.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.efficient-java-matrix-library</groupId>
+            <artifactId>ejml</artifactId>
+            <version>0.23</version>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.stanford.nlp</groupId>
+            <artifactId>stanford-corenlp</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.stanford.nlp</groupId>
+            <artifactId>stanford-corenlp</artifactId>
+            <version>3.3.0</version>
+            <classifier>models</classifier>
         </dependency>
 
         <dependency>
@@ -95,34 +101,19 @@
         </dependency>
 
         <dependency>
-            <groupId>edu.stanford.nlp</groupId>
-            <artifactId>stanford-corenlp</artifactId>
-            <version>3.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.stanford.nlp</groupId>
-            <artifactId>stanford-corenlp</artifactId>
-            <version>3.3.0</version>
-            <classifier>models</classifier>
-        </dependency>
-        <dependency>
             <groupId>de.jollyday</groupId>
             <artifactId>jollyday</artifactId>
             <version>0.4.7</version>
         </dependency>
-        <dependency>
-            <groupId>com.googlecode.efficient-java-matrix-library</groupId>
-            <artifactId>ejml</artifactId>
-            <version>0.23</version>
-        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.12.1</version>
         </dependency>
 
-
     </dependencies>
+
     <properties>
         <maven.compiler.source>1.11</maven.compiler.source>
         <maven.compiler.target>1.11</maven.compiler.target>

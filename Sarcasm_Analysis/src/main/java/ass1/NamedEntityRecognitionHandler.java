@@ -17,6 +17,8 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
+
+
 public class NamedEntityRecognitionHandler {
 
     public String getEntities(String review) {

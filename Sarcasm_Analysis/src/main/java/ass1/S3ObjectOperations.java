@@ -23,7 +23,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
-
 //import com.amazonaws.AmazonServiceException;
 //import com.amazonaws.SdkClientException;
 //import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -39,12 +38,23 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 
 public class S3ObjectOperations {
 
     private static S3Client s3;
+
+    public S3ObjectOperations() {
+        Region region = Region.US_EAST_1;
+        s3 = S3Client.builder().region(region).build();
+    }
+
+    public static void main(String[] args) throws IOException {
+        getObject("input1.txt", "inputtestttt", "C:\\Users\\yotam\\Desktop\\input11.txt");
+    }
+
 
     public static String[] PutObjects(String[] files, String bucketName) throws IOException {
         String keys[] = new String[files.length];
@@ -54,6 +64,7 @@ public class S3ObjectOperations {
 
         return keys;
     }
+
 
     public static String PutObject(String filePath, String bucket) throws IOException {
         Region region = Region.US_EAST_1;
@@ -72,7 +83,10 @@ public class S3ObjectOperations {
 
     // Get Object
     public static void getObject(String key, String bucket, String output) throws IOException {
-       s3.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build(),
+        Region region = Region.US_EAST_1;
+        s3 = S3Client.builder().region(region).build();
+
+        s3.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build(),
                 ResponseTransformer.toFile(Paths.get(output)));
     }
 
@@ -154,6 +168,15 @@ public class S3ObjectOperations {
                 .build());
 
         return bucket;
+    }
+
+    public static String getBucket(String bucket) {
+        List<Bucket> buckets = s3.listBuckets().buckets();
+        for (Bucket b : buckets) {
+            if (b.name().equals(bucket))
+                return bucket;
+        }
+        return CreateBucket(bucket);
     }
 
     private static void deleteBucket(String bucket) {
