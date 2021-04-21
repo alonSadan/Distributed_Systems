@@ -3,7 +3,6 @@ package ass1;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import sun.misc.JavaSecurityAccess;
 
 import java.io.*;
 import java.util.Iterator;
@@ -25,7 +24,7 @@ public class JsonParser {
 
         //ObjectMapper objectMapper = new ObjectMapper();
         //Input iput = objectMapper.readValue(new File("example.json"), Input.class);
-        String pathToinput = "C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Sarcasm_Analysis\\input files\\B000EVOSE4.txt";
+        String pathToinput = "/home/ec2-user/app/B000EVOSE4.txt";
         JsonParser parser;
         try {
             parser = new JsonParser(pathToinput);
