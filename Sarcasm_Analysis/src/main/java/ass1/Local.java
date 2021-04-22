@@ -38,9 +38,10 @@ public class Local { //args[] == paths to input files
         }
 
         final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
-        String bucketName = S3ObjectOperations.CreateBucket("inputFiles");
+        String bucketName = S3ObjectOperations.CreateBucket("inputfiles");
         String keys[] = S3ObjectOperations.PutObjects(inputs, bucketName);
-        String SendQueueUrl = SendReceiveMessages.createSQS("localSendQueue");
+        // getQueueURLByName creates the queue if needed
+        String SendQueueUrl = SendReceiveMessages.getQueueURLByName("localsendqueue");
         for (String key : keys) {
             MessageAttributeValue N = SendReceiveMessages.createStringAttributeValue(n);
             messageAttributes.put("n", N);
@@ -54,7 +55,7 @@ public class Local { //args[] == paths to input files
         }
 
         //wait for done messages
-        String localRecieveQueueUrl = SendReceiveMessages.createSQS("loaclRecieveQueue");
+        String localRecieveQueueUrl = SendReceiveMessages.getQueueURLByName("loaclrecievequeue");
         boolean stop = false;
         int counter = 0;
         List<Message> messages = null;

@@ -1,5 +1,6 @@
 package ass1;
 
+import jdk.internal.net.http.common.Pair;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
@@ -32,48 +35,84 @@ public class Manager {
         // first parse the jason, then send the reviews
         int numOfReviews = 0;
         int numOfanswers = 0;
+        final int MAX_T = 10;
         Ec2Client ec2 = Ec2Client.create();
         String localQueueURL = SendReceiveMessages.getQueueURLByName("localsendqueue");
         Message message;
         int nameCounter = 0;
+        ExecutorService pool = Executors.newFixedThreadPool(MAX_T);
+
         while (!shouldTerminate()) { //default visibilty timeout is 30 seconds. So receive is thread safe
-            message = SendReceiveMessages.receive(localQueueURL, "bucket", "key", "n");
+            String workersQueueURL = SendReceiveMessages.createSQS("jobs");
+            message = SendReceiveMessages.receive(localQueueURL, "bucket", "key", "n", "id"); //maybe receive many messages.
             if (message != null) {
                 SendReceiveMessages.deleteMessage(localQueueURL, message);
-                int n = Integer.parseInt(SendReceiveMessages.extractAttribute(message, "n"));
-                // download the file
-                String key = SendReceiveMessages.extractAttribute(message, "key");
-                String bucket = SendReceiveMessages.extractAttribute(message, "bucket");
-                String filename = "input" + String.valueOf(nameCounter) + ".txt";
-                String inputPath = "C:\\Users\\yotam\\Desktop\\" + filename;
-                S3ObjectOperations.getObject(key, bucket, inputPath);
-                // parse the message to get the reviews
-                JsonParser parser = new JsonParser(inputPath);
 
-                String workersQueueURL = SendReceiveMessages.createSQS("jobs");
-                List<Review> reviews;
+                //manage threads
 
-                while (parser.hasNextInput()) {
-                    System.out.println("has next input");
-                    reviews = parser.getNextReviews();
-                    numOfReviews += reviews.size();
 
-                    // create m-k workers
-                    createWorkers(ec2, numOfReviews, n);
 
-                    for (Review review : reviews) {
-                        // send each message twice, once for ner and once for sentiment
-                        distributeJobsToWorkers(review, workersQueueURL);
-                    }
-                }
+                    Runnable r1 = new ManagerTask(message);
+
+
+                    // creates a thread pool with MAX_T no. of
+                    // threads as the fixed pool size(Step 2)
+
+
+                    // passes the Task objects to the pool to execute (Step 3)
+                    pool.execute(r1);
+
+
+
+                    // pool shutdown ( Step 4)
+//                int n = Integer.parseInt(SendReceiveMessages.extractAttribute(message, "n"));
+//                // download the file
+//                String key = SendReceiveMessages.extractAttribute(message, "key");
+//                String bucket = SendReceiveMessages.extractAttribute(message, "bucket");
+//                String filename = "input" + String.valueOf(nameCounter) + ".txt";
+//                String inputPath = "C:\\Users\\yotam\\Desktop\\" + filename;
+//                S3ObjectOperations.getObject(key, bucket, inputPath);
+//                // parse the message to get the reviews
+//                JsonParser parser = new JsonParser(inputPath);
+//
+//                String workersQueueURL = SendReceiveMessages.createSQS("jobs");
+//                List<Review> reviews;
+//
+//                while (parser.hasNextInput()) {
+//                    System.out.println("has next input");
+//                    reviews = parser.getNextReviews();
+//                    numOfReviews += reviews.size();
+//
+//                    // create m-k workers
+//                    createWorkers(ec2, numOfReviews, n);
+//
+//                    for (Review review : reviews) {
+//                        // send each message twice, once for ner and once for sentiment
+//                        distributeJobsToWorkers(review, workersQueueURL);
+//                    }
+//                }
             }
 
-            numOfanswers += receiveMessagesFromWorkers(numOfanswers, numOfReviews * 2);
-            nameCounter++;
-        }
 
-        terminate(ec2, numOfReviews, numOfanswers);
+        }
+        terminate(ec2, numOfReviews, numOfanswers, pool);
     }
+
+    public static List<Pair<String,String>> parseLocalMessageLocations(Message message){
+
+        String[] split = message.body().split(":");
+        List<Pair<String,String>> locations = new ArrayList<Pair<String,String>>();
+        for(int i = 0; i< split.length; i += 2){
+            if ( (split.length) % 2 != 0) {
+                System.out.println("parsing message, but didnt receive an even number of array elements");
+                System.exit(1);
+            }
+
+            locations.add(new Pair(split[i], split[i+1]));
+        }
+        return locations;
+    }
+
 
     public static void createFile(String filename) {
         try {
@@ -92,12 +131,12 @@ public class Manager {
     private static boolean shouldTerminate() {
         Message message;
         String localQueueURL = SendReceiveMessages.getQueueURLByName("localsendqueue");
-        message = SendReceiveMessages.receive(localQueueURL,"terminate");
+        message = SendReceiveMessages.receive(localQueueURL, "terminate");
         if (message != null)
             System.out.println("ShouldTerminate: " + SendReceiveMessages.extractAttribute(message, "terminate"));
 
         if (message != null && SendReceiveMessages.extractAttribute(message, "terminate") != null
-        && SendReceiveMessages.extractAttribute(message, "terminate").equals("true")
+                && SendReceiveMessages.extractAttribute(message, "terminate").equals("true")
         ) {
             return true;
         }
@@ -213,14 +252,15 @@ public class Manager {
      */
 
 
-    public static void terminate(Ec2Client ec2, int numOfReviews, int numberOfanswers) throws InterruptedException, IOException { // stop everything connected to the local that sent the terminate
+    public static void terminate(Ec2Client ec2, int numOfReviews, int numberOfanswers, ExecutorService pool) throws InterruptedException, IOException { // stop everything connected to the local that sent the terminate
         System.out.println("terminating");
-        //TODO:stop the other manager threads
+
         int numOfMessages = numOfReviews * 2; //two jobs per review
-//        while (numOfMessages != numberOfanswers) { //TODO: wait for workers to finish
-//            sleep(2000);
-//            numberOfanswers += receiveMessagesFromWorkers(numberOfanswers, numOfMessages);
-//        }
+        while (numOfMessages != numberOfanswers) { //TODO: wait for workers to finish
+            sleep(2000);
+            numberOfanswers += receiveMessagesFromWorkers(numberOfanswers, numOfMessages);
+        }
+        pool.shutdown();
         TerminateInstancesRequest terminateRequest = TerminateInstancesRequest.builder().instanceIds(getIntsancesIDsByJob(ec2, "worker")).build();
         ec2.terminateInstances(terminateRequest);
 

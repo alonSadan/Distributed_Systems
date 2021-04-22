@@ -108,10 +108,14 @@ public class SendReceiveMessages {
 
     public static String getQueueURLByName(String name) {
         SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
-        GetQueueUrlRequest getQueueRequest = GetQueueUrlRequest.builder()
-                .queueName(name)
-                .build();
-        return sqs.getQueueUrl(getQueueRequest).queueUrl();
+        try {
+            GetQueueUrlRequest getQueueRequest = GetQueueUrlRequest.builder()
+                    .queueName(name)
+                    .build();
+            return sqs.getQueueUrl(getQueueRequest).queueUrl();
+        } catch (QueueDoesNotExistException  e) { //queue doesnt exist
+            return createSQS(name);
+        }
     }
 
 
