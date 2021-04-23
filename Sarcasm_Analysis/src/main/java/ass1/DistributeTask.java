@@ -1,5 +1,6 @@
 package ass1;
 
+import javafx.util.Pair;
 import jdk.internal.net.http.common.Pair;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
@@ -15,7 +16,7 @@ import static java.lang.Thread.sleep;
 import static java.util.Collections.emptyList;
 
 
-public class ManagerTask implements Runnable {
+public class DistributeTask implements Runnable {
 
     private int numOfReviews;
     private Message message;
@@ -23,20 +24,23 @@ public class ManagerTask implements Runnable {
     private int n;
     private int numOfWorkers;
     private List<String> workersIds;
-    private String localId;
+    private CloudLocal local;
 
 
-    public ManagerTask(Message msg) {
+    public DistributeTask(Message msg, CloudLocal local) {
 
         numOfReviews = 0;
         message = msg;
-        localId = SendReceiveMessages.extractAttribute(msg,"id");
+        // local ids is a list of size 1
         ec2 = Ec2Client.create();
         n = 0;
         numOfWorkers = 0;
         workersIds = new ArrayList<String>();
+        this.local = local;
     }
-
+        // 1)make father receive multiple messages (2) split manager task into recive and distribute
+        // (3) mkae threads work on all local aplictaions togther (4) keep local applcaiton in data structure
+        //
 
     @Override
     public void run() {
@@ -47,7 +51,7 @@ public class ManagerTask implements Runnable {
             for (Pair<String, String> location : locations) {   //PAir<Key, Bucket>
                 String filename = "input" + new Date().getTime();
                 String inputPath = "C:\\Users\\yotam\\Desktop\\" + filename;
-                S3ObjectOperations.getObject(location.first, location.second, inputPath);
+                S3ObjectOperations.getObject(location.getKey(), location.getValue(), inputPath);
                 // parse the message to get the reviews
                 JsonParser parser = new JsonParser(inputPath);
                 String workersQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
@@ -64,11 +68,11 @@ public class ManagerTask implements Runnable {
                     for (Review review : reviews) {
                         // send each message twice, once for ner and once for sentiment
                         distributeJobsToWorkers(review, workersQueueURL);
+                        local.incNumOfMessages(2);
                     }
                 }
             }
 
-            receiveMessagesFromWorkers();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -119,7 +123,6 @@ public class ManagerTask implements Runnable {
         }
     }
 
-
     public static int countInstances(Ec2Client ec2, String job) {
         System.out.println("countInstances of type " + job);
         int count = 0;
@@ -150,59 +153,7 @@ public class ManagerTask implements Runnable {
 
         return count;
     }
-
-    public void terminate(int numberOfanswers) throws InterruptedException, IOException { // stop everything connected to the local that sent the terminate
-        System.out.println("terminating");
-        //TODO:stop the other manager threads
-        int numOfMessages = numOfReviews * 2; //two jobs per review
-//        while (numOfMessages != numberOfanswers) { //TODO: wait for workers to finish
-//            sleep(2000);
-//            numberOfanswers += receiveMessagesFromWorkers(numberOfanswers, numOfMessages);
-//        }
-        TerminateInstancesRequest terminateRequest = TerminateInstancesRequest
-                .builder()
-                .instanceIds(getIntsancesIDsByJob("worker", numOfWorkers))
-                .build();
-        ec2.terminateInstances(terminateRequest);
-    }
-
-    public void receiveMessagesFromWorkers() throws IOException {
-        int numOfAnswers = 0;
-        int numOfMessages = numOfReviews * 2;
-        // getBucket can also create the bucket
-        String outputBucket = S3ObjectOperations.getBucket("outputs-" + localId);
-        String answersURL = SendReceiveMessages.getQueueURLByName("answers");
-        while (numOfAnswers != numOfMessages) {
-            Message answer = SendReceiveMessages.receive(answersURL, "reviewID", "job", localId);
-            if (answer != null) {
-                ++numOfAnswers;
-            }
-        }
-        String outputName = "output" + localId;
-        createFile(outputName);
-        String key = S3ObjectOperations.PutObject(outputName, outputBucket);
-        String localRecieveQueueUrl = SendReceiveMessages.getQueueURLByName("loaclrecievequeue");
-        final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
-        MessageAttributeValue KEY = SendReceiveMessages.createStringAttributeValue(key);
-        messageAttributes.put("key", KEY);
-        MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue(outputBucket);
-        messageAttributes.put("bucket", bucket);
-        SendReceiveMessages.send(localRecieveQueueUrl, "", messageAttributes);
-        }
-
-    public static void createFile(String filename) {
-            try {
-                File myObj = new File(filename);
-                if (myObj.createNewFile()) {
-                    System.out.println("File created: " + myObj.getName());
-                } else {
-                    System.out.println("File already exists.");
-                }
-            } catch (IOException e) {
-                System.out.println("An error occurred.");
-                e.printStackTrace();
-            }
-        }
+    
 
     public List<String> getIntsancesIDsByJob(String job, List<String> workersIds) {
         System.out.println("getIntsancesIDsByJob");
@@ -226,5 +177,6 @@ public class ManagerTask implements Runnable {
         instances.stream().forEach(instance -> instancesIds.add(instance.instanceId()));
         return instancesIds;
     }
-}
+
+}//end of class
 

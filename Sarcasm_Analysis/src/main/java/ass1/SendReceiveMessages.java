@@ -32,8 +32,9 @@ public class SendReceiveMessages {
     }
 
     public static void terminateManager() {
-    
+
     }
+
     public static void send(String queueUrl, String messageBody, Map<String, MessageAttributeValue> attributes) {
         SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
         SendMessageRequest send_msg_request = SendMessageRequest.builder()
@@ -61,10 +62,11 @@ public class SendReceiveMessages {
 //                .build();
 //        sqs.sendMessageBatch(send_batch_request);
 
-    public static Message receive(String queueUrl, String... attributeNames) { //returns one message by default
+    public static List<Message> receiveMany(String queueUrl, int maxNumberOfMessages, String... attributeNames) { //returns one message by default
         SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
         ReceiveMessageRequest receiveRequest = ReceiveMessageRequest.builder()
                 .messageAttributeNames(attributeNames)
+                .maxNumberOfMessages(maxNumberOfMessages)
                 .queueUrl(queueUrl)
                 .build();
         List<Message> allmessages = sqs.receiveMessage(receiveRequest).messages();
@@ -72,7 +74,15 @@ public class SendReceiveMessages {
         List<Message> filteredMessages = filterMessagesByAttributes(allmessages, attributeNames);
         System.out.println("filtered messages: " + filteredMessages.size());
         if (!filteredMessages.isEmpty()) {
-            return filteredMessages.get(0);
+            return filteredMessages;
+        }
+        return null;
+    }
+
+    public static Message receive(String queueUrl, String... attributeNames) { //returns one message by default
+        List<Message> optioanlMessage = receiveMany(queueUrl, 1, attributeNames);
+        if (optioanlMessage != null && !optioanlMessage.isEmpty()) {
+            return optioanlMessage.get(0);
         }
         return null;
     }
@@ -113,7 +123,7 @@ public class SendReceiveMessages {
                     .queueName(name)
                     .build();
             return sqs.getQueueUrl(getQueueRequest).queueUrl();
-        } catch (QueueDoesNotExistException  e) { //queue doesnt exist
+        } catch (QueueDoesNotExistException e) { //queue doesnt exist
             return createSQS(name);
         }
     }

@@ -1,28 +1,40 @@
 package ass1;
 
-import jdk.internal.net.http.common.Pair;
+import javafx.util.Pair;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CloudLocal {
-    private long id;
+    private String id;
     private List<Pair<String, String>> inputFilesLocations; // key and bucket
+    private int numOfAnswers;
+    private int numOfMessages;
+    private AtomicBoolean done;
 
-    public CloudLocal(long ID){
+    public CloudLocal(String ID){
         id = ID;
-        inputFilesLocations = new ArrayList<>();
+        numOfAnswers = 0;
+        numOfMessages = 0;
+        done = new AtomicBoolean(false);
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void addFile(String key, String bucket) {
-        inputFilesLocations.add(new Pair<>(key, bucket));
+    public synchronized boolean updateValuesAndCheckDone(Message message){
+        numOfAnswers++;
+        return done.getAndSet(numOfAnswers == numOfMessages);
     }
 
-    public List<Pair<String, String>> getInputFilesLocations() {
-        return inputFilesLocations;
+    public boolean isDone(){
+        return done.get();
+    }
+
+    public synchronized void incNumOfMessages(int numOfMessages) {
+        this.numOfMessages += numOfMessages;
     }
 }

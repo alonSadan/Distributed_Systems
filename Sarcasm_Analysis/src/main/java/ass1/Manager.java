@@ -1,6 +1,8 @@
 package ass1;
 
-import jdk.internal.net.http.common.Pair;
+import com.sun.org.apache.regexp.internal.RE;
+import javafx.util.Pair;
+//import jdk.internal.net.http.common.Pair;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -38,77 +40,54 @@ public class Manager {
         final int MAX_T = 10;
         Ec2Client ec2 = Ec2Client.create();
         String localQueueURL = SendReceiveMessages.getQueueURLByName("localsendqueue");
-        Message message;
         int nameCounter = 0;
         ExecutorService pool = Executors.newFixedThreadPool(MAX_T);
+        Map<String, CloudLocal> locals = new HashMap<String, CloudLocal>();
 
         while (!shouldTerminate()) { //default visibilty timeout is 30 seconds. So receive is thread safe
             String workersQueueURL = SendReceiveMessages.createSQS("jobs");
-            message = SendReceiveMessages.receive(localQueueURL, "bucket", "key", "n", "id"); //maybe receive many messages.
-            if (message != null) {
-                SendReceiveMessages.deleteMessage(localQueueURL, message);
+            List<Message> distributeMessages = SendReceiveMessages.receiveMany(localQueueURL, 10, "bucket", "key", "n", "id"); //maybe receive many messages.
 
+            if (!distributeMessages.isEmpty()) {
+                for (Message message : distributeMessages) {
+                    String localid = SendReceiveMessages.extractAttribute(message, "id");
+                    locals.put(localid, new CloudLocal(localid)); // each local sends a message only once
+                    Runnable r1 = new DistributeTask(message, locals.get(localid));
+                    SendReceiveMessages.deleteMessage(localQueueURL, message);
+                    pool.execute(r1);
+                }
+                for (int i = 0; i < 5; i++) {
+                    Runnable r2 = new ReceiveTask(locals);
+                }
                 //manage threads
 
 
-
-                    Runnable r1 = new ManagerTask(message);
-
-
-                    // creates a thread pool with MAX_T no. of
-                    // threads as the fixed pool size(Step 2)
+                // creates a thread pool with MAX_T no. of
+                // threads as the fixed pool size(Step 2)
 
 
-                    // passes the Task objects to the pool to execute (Step 3)
-                    pool.execute(r1);
+                // passes the Task objects to the pool to execute (Step 3)
+                pool.execute(r1);
 
 
+                // pool shutdown ( Step 4) is in terminate()
 
-                    // pool shutdown ( Step 4)
-//                int n = Integer.parseInt(SendReceiveMessages.extractAttribute(message, "n"));
-//                // download the file
-//                String key = SendReceiveMessages.extractAttribute(message, "key");
-//                String bucket = SendReceiveMessages.extractAttribute(message, "bucket");
-//                String filename = "input" + String.valueOf(nameCounter) + ".txt";
-//                String inputPath = "C:\\Users\\yotam\\Desktop\\" + filename;
-//                S3ObjectOperations.getObject(key, bucket, inputPath);
-//                // parse the message to get the reviews
-//                JsonParser parser = new JsonParser(inputPath);
-//
-//                String workersQueueURL = SendReceiveMessages.createSQS("jobs");
-//                List<Review> reviews;
-//
-//                while (parser.hasNextInput()) {
-//                    System.out.println("has next input");
-//                    reviews = parser.getNextReviews();
-//                    numOfReviews += reviews.size();
-//
-//                    // create m-k workers
-//                    createWorkers(ec2, numOfReviews, n);
-//
-//                    for (Review review : reviews) {
-//                        // send each message twice, once for ner and once for sentiment
-//                        distributeJobsToWorkers(review, workersQueueURL);
-//                    }
-//                }
             }
-
-
         }
         terminate(ec2, numOfReviews, numOfanswers, pool);
     }
 
-    public static List<Pair<String,String>> parseLocalMessageLocations(Message message){
+    public static List<Pair<String, String>> parseLocalMessageLocations(Message message) {
 
         String[] split = message.body().split(":");
-        List<Pair<String,String>> locations = new ArrayList<Pair<String,String>>();
-        for(int i = 0; i< split.length; i += 2){
-            if ( (split.length) % 2 != 0) {
+        List<Pair<String, String>> locations = new ArrayList<Pair<String, String>>();
+        for (int i = 0; i < split.length; i += 2) {
+            if ((split.length) % 2 != 0) {
                 System.out.println("parsing message, but didnt receive an even number of array elements");
                 System.exit(1);
             }
 
-            locations.add(new Pair(split[i], split[i+1]));
+            locations.add(new Pair(split[i], split[i + 1]));
         }
         return locations;
     }
@@ -217,33 +196,6 @@ public class Manager {
 //        SendReceiveMessages_yotam.send(workersQueueURL, bucket + ':' + key);
 //    }
 
-    public static int receiveMessagesFromWorkers(int numberOfAnswers, int numOfMessages) throws IOException {
-//        while (true) {
-//            // getBucket can also create the bucket
-//            String outputBucket = S3ObjectOperations.getBucket("outputs");
-//            String answersURL = SendReceiveMessages.getQueueURLByName("answers");
-//            Message answer = SendReceiveMessages.receive(answersURL, "reviewID", "job");
-//            if (answer != null) {
-//                ++numberOfAnswers;
-//                if (numOfMessages == numberOfAnswers) {
-//                    createFile("answer-not-null");
-//                    String key = S3ObjectOperations.PutObject("answer-not-null", outputBucket);
-//                    String localRecieveQueueUrl = SendReceiveMessages.getQueueURLByName("loaclRecieveQueue");
-//                    final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
-//                    MessageAttributeValue KEY = SendReceiveMessages.createStringAttributeValue(key);
-//                    messageAttributes.put("key", KEY);
-//                    MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue(outputBucket);
-//                    messageAttributes.put("bucket", bucket);
-//                    SendReceiveMessages.send(localRecieveQueueUrl, "", messageAttributes);
-//                }
-//
-//            } else {
-//                break;
-//            }
-//        }
-
-        return numberOfAnswers;
-    }
 
     /*
     the manager "Should not accept any more input files from local applications."
@@ -252,14 +204,21 @@ public class Manager {
      */
 
 
-    public static void terminate(Ec2Client ec2, int numOfReviews, int numberOfanswers, ExecutorService pool) throws InterruptedException, IOException { // stop everything connected to the local that sent the terminate
+    public static void terminate(Ec2Client ec2, ExecutorService pool, Map<String, CloudLocal> locals) throws InterruptedException, IOException { // stop everything connected to the local that sent the terminate
         System.out.println("terminating");
+        boolean allDone = false;
+        CloudLocal[] localsValues = (CloudLocal[]) locals.values().toArray();
 
-        int numOfMessages = numOfReviews * 2; //two jobs per review
-        while (numOfMessages != numberOfanswers) { //TODO: wait for workers to finish
-            sleep(2000);
-            numberOfanswers += receiveMessagesFromWorkers(numberOfanswers, numOfMessages);
+        for (CloudLocal local : localsValues) {
+            if (local.isDone()) {
+                continue;
+            } else {
+                while (!local.isDone()) {
+                    sleep(2);
+                }
+            }
         }
+
         pool.shutdown();
         TerminateInstancesRequest terminateRequest = TerminateInstancesRequest.builder().instanceIds(getIntsancesIDsByJob(ec2, "worker")).build();
         ec2.terminateInstances(terminateRequest);
