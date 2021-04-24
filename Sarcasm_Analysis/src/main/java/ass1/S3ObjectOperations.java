@@ -51,11 +51,6 @@ public class S3ObjectOperations {
         s3 = S3Client.builder().region(region).build();
     }
 
-    public static void main(String[] args) throws IOException {
-        getObject("input1.txt", "inputtestttt", "C:\\Users\\yotam\\Desktop\\input11.txt");
-    }
-
-
     public static String[] PutObjects(String[] files, String bucketName) throws IOException {
         String keys[] = new String[files.length];
         for (int i = 0; i < files.length; ++i) {
@@ -92,7 +87,8 @@ public class S3ObjectOperations {
     }
 
     public static String CreateBucket(String bucket) {
-
+        Region region = Region.US_EAST_1;
+        s3 = S3Client.builder().region(region).build();
         bucket = bucket + System.currentTimeMillis();
         s3.createBucket(CreateBucketRequest
                 .builder()

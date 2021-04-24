@@ -38,9 +38,9 @@ public class DistributeTask implements Runnable {
         workersIds = new ArrayList<String>();
         this.local = local;
     }
-        // 1)make father receive multiple messages (2) split manager task into recive and distribute
-        // (3) mkae threads work on all local aplictaions togther (4) keep local applcaiton in data structure
-        //
+    // 1)make father receive multiple messages (2) split manager task into recive and distribute
+    // (3) mkae threads work on all local aplictaions togther (4) keep local applcaiton in data structure
+    //
 
     @Override
     public void run() {
@@ -109,6 +109,8 @@ public class DistributeTask implements Runnable {
     }
 
     public void createWorkers() {
+        String ImageID = "ami-0cea5609c91d4134b";
+
         int k = countInstances(ec2, "worker");
         numOfWorkers = numOfReviews / n + 1 - k; // the +1 is for integer division
         for (int i = 0; i < numOfWorkers; i++) {
@@ -116,8 +118,8 @@ public class DistributeTask implements Runnable {
                     "cd AWS-files\n" +
                     "java -cp 2-AWS-11.jar ass1/Worker\n";
             String val_of_i = String.valueOf(i);
-            String[] arguments = {"worker" + val_of_i, "ami-0701529d238b4ec2a", script, "worker"};
-           CreateInstance.main(arguments);
+            String[] arguments = {"worker" + val_of_i, ImageID, script, "worker"};
+            CreateInstance.main(arguments);
         }
     }
 

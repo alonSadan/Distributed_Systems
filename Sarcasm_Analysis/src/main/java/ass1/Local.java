@@ -4,6 +4,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -22,10 +23,11 @@ public class Local { //args[] == paths to input files
             System.out.println("no input files");
             System.exit(1);
         }
-
+        boolean shouldTerminate = false;
         String n = "";
         String[] inputs;
         if (args[args.length - 1].equals("terminate")) {
+            shouldTerminate = true;
             n = args[args.length - 2];
             inputs = Arrays.copyOfRange(args, 0, args.length - 2);
         } else {
@@ -41,12 +43,23 @@ public class Local { //args[] == paths to input files
         SendInputsLocationsToManager(inputs, n);
         Message doneMessage = waitForDoneMessage();
         downloadSummeryFile(doneMessage);
+        if(shouldTerminate){
+            terminateManager();
+        }
+    }
+
+    public static void terminateManager(){
+        String SendQueueUrl = SendReceiveMessages.getQueueURLByName("localsendqueue");
+        final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
+        MessageAttributeValue terminate = SendReceiveMessages.createStringAttributeValue("true");
+        messageAttributes.put("terminate", terminate);
+        SendReceiveMessages.send(SendQueueUrl, "terminate", messageAttributes);
     }
 
     public static void downloadSummeryFile(Message doneMessage) throws IOException {
         String bucket = SendReceiveMessages.extractAttribute(doneMessage, "bucket");
         String key = SendReceiveMessages.extractAttribute(doneMessage, "key");
-        S3ObjectOperations.getObject(key, bucket, System.getProperty("user.dir") + "/output-" + String.valueOf(new Date().getTime()));
+        S3ObjectOperations.getObject(bucket, key, System.getProperty("user.dir") + File.separator + "output-" + String.valueOf(new Date().getTime()));
     }
 
     public static Message waitForDoneMessage() {
@@ -73,30 +86,23 @@ public class Local { //args[] == paths to input files
         String keys[] = S3ObjectOperations.PutObjects(inputs, bucketName);
         // getQueueURLByName creates the queue if needed
         String SendQueueUrl = SendReceiveMessages.getQueueURLByName("localsendqueue");
+        String messageBody = "";
         for (String key : keys) {
-            MessageAttributeValue N = SendReceiveMessages.createStringAttributeValue(n);
-            messageAttributes.put("n", N);
-
-            MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue(bucketName);
-            messageAttributes.put("bucket", bucket);
-
-            MessageAttributeValue KEY = SendReceiveMessages.createStringAttributeValue(key);
-            messageAttributes.put("key", KEY);
-
-            MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(String.valueOf(new Date().getTime()));
-            messageAttributes.put("localID", localID);
-
-            SendReceiveMessages.send(SendQueueUrl, "", messageAttributes);
+            messageBody += (bucketName + ":" + key);
         }
+        MessageAttributeValue N = SendReceiveMessages.createStringAttributeValue(n);
+        messageAttributes.put("n", N);
 
-
+        MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(String.valueOf(new Date().getTime()));
+        messageAttributes.put("localID", localID);
+        SendReceiveMessages.send(SendQueueUrl, messageBody, messageAttributes);
     }
 
     private static void CreateManager(String managerName) {
         String script = "#!/bin/bash\n" +
                 "cd AWS-files\n" +
                 "java -cp 2-AWS-11.jar ass1/Manager\n";
-        String[] args = {managerName, "ami-0062dd78ec1ecd019", script, "manager"};
+        String[] args = {managerName, "ami-067b9df29b2afff5e", script, "manager"};
         CreateInstance.main(args);
     }
 
