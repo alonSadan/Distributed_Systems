@@ -22,33 +22,31 @@ public class Worker {
         // send (some) message describes the original review location, together
         // with the out put of the operation.
 
-        ReceiveMessageResponse receiveMessageResponse;
-        for(int i = 0  ; i < 10 ; i++ ){
-            System.out.println(String.valueOf(i));
-//        while (!shouldStop()) {
+
+        while (true) {
             String jobQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
             String answersQueueURL = SendReceiveMessages.getQueueURLByName("answers");
 
-            Message jobMessage = SendReceiveMessages.receive(jobQueueURL, "job","reviewID");
+            Message jobMessage = SendReceiveMessages.receive(jobQueueURL, "job","reviewID","localID");
 
             if (jobMessage == null) {
                 System.out.println("no message in queue");
                 continue;
             }
-
-            String job = SendReceiveMessages.extractAttribute(jobMessage, "job");
-            if(job == null) {
-                System.out.println("nabcsndlkasndlka");
-            }
-
-
+            
             final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
 
-            MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(String.valueOf(jobMessage.attributes().get("reviewId")));
+            String revID = SendReceiveMessages.extractAttribute(jobMessage, "reviewID");
+            MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(revID);
             messageAttributes.put("reviewId", reviewID);
 
+            String job = SendReceiveMessages.extractAttribute(jobMessage, "job");
             MessageAttributeValue jobAttributeValue = SendReceiveMessages.createStringAttributeValue(job);
             messageAttributes.put("job", jobAttributeValue);
+
+            String localID = SendReceiveMessages.extractAttribute(jobMessage, "localID");
+            MessageAttributeValue localIDAttributeValue = SendReceiveMessages.createStringAttributeValue(localID);
+            messageAttributes.put("localID", jobAttributeValue);
 
             if (job.equals("NER")) {
 
@@ -70,17 +68,6 @@ public class Worker {
             }
         }
     }
-
-    private static boolean shouldStop() {
-        Message workerMessage;
-        String wokerQueueURL = SendReceiveMessages.getQueueURLByName("WORKER_QUEUE");
-        workerMessage = SendReceiveMessages.receive(wokerQueueURL);
-        if (workerMessage != null && SendReceiveMessages.extractAttribute(workerMessage, "stop") == "true") {
-            return true;
-        }
-        return false;
-    }
-
 
 }
 

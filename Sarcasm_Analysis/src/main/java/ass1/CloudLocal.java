@@ -84,7 +84,7 @@ public class CloudLocal {
         String outputName = "output-" + id + ".html";
         File output = createOutputFileToCWD(outputName);
         renderHTMLToFile(output);
-        //uploadOutputFileToS3(outputName)
+        uploadOutputFileToS3(outputName);
     }
 
     public File createOutputFileToCWD(String outputName){

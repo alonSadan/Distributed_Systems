@@ -13,6 +13,8 @@ import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 
+import static java.lang.Thread.sleep;
+
 
 public class Local { //args[] == paths to input files
     public static void main(String[] args) throws IOException {
@@ -34,9 +36,39 @@ public class Local { //args[] == paths to input files
         
         Ec2Client ec2 = Ec2Client.create();
         if (!managerExists(ec2)) {
-            CreateManager("manager1");
+            CreateManager("manager");
         }
 
+        SendInputsLocationsToManager(inputs, n);
+        Message doneMessage = waitForDoneMessage();
+        downloadSummeryFile(doneMessage);
+    }
+
+    public static void downloadSummeryFile(Message doneMessage) throws IOException {
+        String bucket = SendReceiveMessages.extractAttribute(doneMessage,"bucket");
+        String key = SendReceiveMessages.extractAttribute(doneMessage,"key");
+        S3ObjectOperations.getObject(key, bucket, System.getProperty("user.dir") + "/output-" + String.valueOf(new Date().getTime()));
+    }
+
+    public static Message waitForDoneMessage(){
+        String localRecieveQueueUrl = SendReceiveMessages.getQueueURLByName("loaclrecievequeue");
+        boolean stop = false;
+        Message doneMessage = null;
+        while (!stop) { //busy wait until we get a done msg
+            doneMessage = SendReceiveMessages.receive(localRecieveQueueUrl, "bucket","key");
+            if (doneMessage != null) {
+                stop = true;
+            }
+            try {
+                sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return doneMessage;
+    }
+
+    public static void SendInputsLocationsToManager(String [] inputs, String n) throws IOException {
         final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
         String bucketName = S3ObjectOperations.CreateBucket("inputfiles");
         String keys[] = S3ObjectOperations.PutObjects(inputs, bucketName);
@@ -51,43 +83,19 @@ public class Local { //args[] == paths to input files
 
             MessageAttributeValue KEY = SendReceiveMessages.createStringAttributeValue(key);
             messageAttributes.put("key", KEY);
+
+            MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(String.valueOf(new Date().getTime()));
+            messageAttributes.put("localID", localID);
+
             SendReceiveMessages.send(SendQueueUrl, "",messageAttributes);
         }
 
-        //wait for done messages
-        String localRecieveQueueUrl = SendReceiveMessages.getQueueURLByName("loaclrecievequeue");
-        boolean stop = false;
-        int counter = 0;
-        List<Message> messages = null;
-        while (!stop) { //busy wait until we get a done msg
-            Message message = SendReceiveMessages.receive(localRecieveQueueUrl);
-            if (message == null) {
-                stop = true;
-            }
-        }
-
-        for (Message message : messages) {
-
-            // current working directory = System.getProperty("user.dir")
-            String[] split = message.body().split(":", 1);
-            if (split.length != 2) {
-                System.out.println("local didnt receive a done message with key and bucket or bucket/key string contanied a colon");
-                System.exit(1);
-            }
-            ++counter;
-            String key = split[0];
-            String bucket = split[1];
-            S3ObjectOperations.getObject(key, bucket, System.getProperty("user.dir") + "/output" + Integer.toString(counter));
-        }
 
     }
-
 
     private static void CreateManager(String managerName) {
         String[] args = {managerName, "ami-0062dd78ec1ecd019", "manager"};
         CreateInstance.main(args);
-
-
     }
 
     public static boolean managerExists(Ec2Client ec2) {

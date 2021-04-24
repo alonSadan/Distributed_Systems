@@ -75,7 +75,7 @@ public class ReceiveTask implements Runnable {
         // getBucket can also create the bucket
 
         String answersURL = SendReceiveMessages.getQueueURLByName("answers");
-        List<Message> answers = SendReceiveMessages.receiveMany(answersURL, 10, "reviewID", "job", "id");
+        List<Message> answers = SendReceiveMessages.receiveMany(answersURL, 10, "reviewID", "job", "localID");
 
         for (Message ans : answers) {
             String localid = SendReceiveMessages.extractAttribute(ans, "id");
