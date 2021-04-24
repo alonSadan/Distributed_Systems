@@ -1,8 +1,9 @@
 package ass1;
 
-import com.sun.org.apache.regexp.internal.RE;
-import javafx.util.Pair;
-//import jdk.internal.net.http.common.Pair;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -37,7 +38,7 @@ public class Manager {
         // first parse the jason, then send the reviews
         int numOfReviews = 0;
         int numOfanswers = 0;
-        final int MAX_T = 10;
+        final int MAX_T = 18;
         Ec2Client ec2 = Ec2Client.create();
         String localQueueURL = SendReceiveMessages.getQueueURLByName("localsendqueue");
         int nameCounter = 0;
@@ -58,6 +59,7 @@ public class Manager {
                 }
                 for (int i = 0; i < 5; i++) {
                     Runnable r2 = new ReceiveTask(locals);
+                    pool.execute(r2);
                 }
                 //manage threads
 
@@ -67,14 +69,13 @@ public class Manager {
 
 
                 // passes the Task objects to the pool to execute (Step 3)
-                pool.execute(r1);
 
 
                 // pool shutdown ( Step 4) is in terminate()
 
             }
         }
-        terminate(ec2, numOfReviews, numOfanswers, pool);
+        terminate(ec2, pool, locals);
     }
 
     public static List<Pair<String, String>> parseLocalMessageLocations(Message message) {
@@ -87,7 +88,7 @@ public class Manager {
                 System.exit(1);
             }
 
-            locations.add(new Pair(split[i], split[i + 1]));
+            locations.add(new ImmutablePair<>(split[i], split[i + 1]));
         }
         return locations;
     }

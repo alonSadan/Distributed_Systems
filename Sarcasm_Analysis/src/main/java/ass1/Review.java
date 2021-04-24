@@ -10,9 +10,12 @@ public class Review {
     private  String title;
     private String author;
     private  String date;
+    private int sentiment = 0;
+    private String namedEntityRecognition = "";
 
     // default constructor to avoid Exception
-    public Review(){}
+    public Review(){
+    }
 
     @JsonProperty(value="date")
     public String getDate() {
@@ -47,6 +50,26 @@ public class Review {
         return author;
     }
 
+
+    public void setNamedEntityRecognition(String namedEntityRecognition) {
+        this.namedEntityRecognition = namedEntityRecognition;
+    }
+
+    public void setSentiment(int sentiment) {
+        this.sentiment = sentiment;
+    }
+
+    public String getNamedEntityRecognition() {
+        return namedEntityRecognition;
+    }
+
+    public int getSentiment() {
+        return sentiment;
+    }
+
+    public boolean isSarcastic(){
+        return rating != sentiment;
+    }
 }
 
 

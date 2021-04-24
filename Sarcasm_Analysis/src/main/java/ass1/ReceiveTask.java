@@ -1,7 +1,6 @@
 package ass1;
 
-import javafx.util.Pair;
-//import jdk.internal.net.http.common.Pair;
+
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -10,11 +9,6 @@ import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.lang.Thread.sleep;
-import static java.util.Collections.emptyList;
-
 
 public class ReceiveTask implements Runnable {
 
@@ -26,7 +20,7 @@ public class ReceiveTask implements Runnable {
     private List<String> workersIds;
     // need a list of local ids
     private String localId;
-    private Map<String, CloudLocal> locals
+    private Map<String, CloudLocal> locals;
 
 
     public ReceiveTask(Map<String, CloudLocal> lcls) {
@@ -86,39 +80,9 @@ public class ReceiveTask implements Runnable {
         for (Message ans : answers) {
             String localid = SendReceiveMessages.extractAttribute(ans, "id");
             if (locals.get(localId).updateValuesAndCheckDone(ans)) {
-                generateOutputFile(locals.get(localId));
+                locals.get(localId).generateOutputFile();
             }
         }
-    }
-
-
-
-
-    public static void generateOutputFile(CloudLocal local) throws IOException {
-        String localid = local.getId();
-        String outputName = "output-" + localid;
-        try {
-            File myObj = new File(outputName);
-            if (myObj.createNewFile()) {
-                System.out.println("File created: " + myObj.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }
-        //getBucket also creates the bucket if nessecery
-        String outputBucket = S3ObjectOperations.getBucket("outputs-" + localid);
-
-        String key = S3ObjectOperations.PutObject(outputName, outputBucket);
-        String localRecieveQueueUrl = SendReceiveMessages.getQueueURLByName("loaclrecievequeue");
-        final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
-        MessageAttributeValue KEY = SendReceiveMessages.createStringAttributeValue(key);
-        messageAttributes.put("key",KEY);
-        MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue(outputBucket);
-        messageAttributes.put("bucket",bucket);
-        SendReceiveMessages.send(localRecieveQueueUrl,"",messageAttributes);
     }
 
     public List<String> getIntsancesIDsByJob(String job, List<String> workersIds) {

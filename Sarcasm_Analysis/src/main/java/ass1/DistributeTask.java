@@ -1,7 +1,7 @@
 package ass1;
 
-import javafx.util.Pair;
-import jdk.internal.net.http.common.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -58,8 +58,8 @@ public class DistributeTask implements Runnable {
                 List<Review> reviews;
 
                 while (parser.hasNextInput()) {
-                    System.out.println("has next input");
                     reviews = parser.getNextReviews();
+                    local.setReviewsFromList(reviews);
                     numOfReviews += reviews.size();
 
                     // create m-k workers
@@ -88,7 +88,7 @@ public class DistributeTask implements Runnable {
                 System.exit(1);
             }
 
-            locations.add(new Pair(split[i], split[i + 1]));
+            locations.add(new ImmutablePair<>(split[i], split[i + 1]));
         }
         return locations;
     }
@@ -119,7 +119,7 @@ public class DistributeTask implements Runnable {
                     "java -cp 2-AWS-11.jar ass1/Worker\n";
             String val_of_i = String.valueOf(i);
             String[] arguments = {"worker" + val_of_i, "ami-0701529d238b4ec2a", script, "worker"};
-            workersIds.add(CreateInstance_yotam.main(arguments));
+           CreateInstance_yotam.main(arguments);
         }
     }
 
