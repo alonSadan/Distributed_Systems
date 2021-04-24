@@ -16,24 +16,16 @@ public class Worker {
 
     public static void main(String[] args) {
 
-        // 1) read (some) message from the queue
-        // 2) Perform the requsted job, and return the result
-        // 3) remove the processed message from the SQS queue
-        // send (some) message describes the original review location, together
-        // with the out put of the operation.
-
-
         while (true) {
             String jobQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
             String answersQueueURL = SendReceiveMessages.getQueueURLByName("answers");
 
-            Message jobMessage = SendReceiveMessages.receive(jobQueueURL, "job","reviewID","localID");
+            Message jobMessage = SendReceiveMessages.receive(jobQueueURL, "job", "reviewID", "localID");
 
             if (jobMessage == null) {
-                System.out.println("no message in queue");
                 continue;
             }
-            
+
             final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
 
             String revID = SendReceiveMessages.extractAttribute(jobMessage, "reviewID");
@@ -68,7 +60,6 @@ public class Worker {
             }
         }
     }
-
 }
 
 

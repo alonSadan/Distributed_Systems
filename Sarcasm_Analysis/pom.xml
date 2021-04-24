@@ -40,8 +40,6 @@
 
 
     <dependencies>
-
-
         <dependency>
             <groupId>com.j2html</groupId>
             <artifactId>j2html</artifactId>
@@ -49,10 +47,21 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/javafx/javafx -->
-       <!-- Thanks for using https://jar-download.com -->
+        <!-- Thanks for using https://jar-download.com -->
         <!-- https://mvnrepository.com/artifact/javafx/javafx -->
 
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.11.1003</version>
+        </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.21</version>
+        </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>

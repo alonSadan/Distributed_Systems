@@ -24,16 +24,15 @@ public class Local { //args[] == paths to input files
         }
 
         String n = "";
-        String [] inputs;
-        if (args[args.length - 1].equals("terminate")){
+        String[] inputs;
+        if (args[args.length - 1].equals("terminate")) {
             n = args[args.length - 2];
             inputs = Arrays.copyOfRange(args, 0, args.length - 2);
-        }
-        else{
+        } else {
             n = args[args.length - 1];
             inputs = Arrays.copyOfRange(args, 0, args.length - 1);
         }
-        
+
         Ec2Client ec2 = Ec2Client.create();
         if (!managerExists(ec2)) {
             CreateManager("manager");
@@ -45,17 +44,17 @@ public class Local { //args[] == paths to input files
     }
 
     public static void downloadSummeryFile(Message doneMessage) throws IOException {
-        String bucket = SendReceiveMessages.extractAttribute(doneMessage,"bucket");
-        String key = SendReceiveMessages.extractAttribute(doneMessage,"key");
+        String bucket = SendReceiveMessages.extractAttribute(doneMessage, "bucket");
+        String key = SendReceiveMessages.extractAttribute(doneMessage, "key");
         S3ObjectOperations.getObject(key, bucket, System.getProperty("user.dir") + "/output-" + String.valueOf(new Date().getTime()));
     }
 
-    public static Message waitForDoneMessage(){
+    public static Message waitForDoneMessage() {
         String localRecieveQueueUrl = SendReceiveMessages.getQueueURLByName("loaclrecievequeue");
         boolean stop = false;
         Message doneMessage = null;
         while (!stop) { //busy wait until we get a done msg
-            doneMessage = SendReceiveMessages.receive(localRecieveQueueUrl, "bucket","key");
+            doneMessage = SendReceiveMessages.receive(localRecieveQueueUrl, "bucket", "key");
             if (doneMessage != null) {
                 stop = true;
             }
@@ -68,7 +67,7 @@ public class Local { //args[] == paths to input files
         return doneMessage;
     }
 
-    public static void SendInputsLocationsToManager(String [] inputs, String n) throws IOException {
+    public static void SendInputsLocationsToManager(String[] inputs, String n) throws IOException {
         final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
         String bucketName = S3ObjectOperations.CreateBucket("inputfiles");
         String keys[] = S3ObjectOperations.PutObjects(inputs, bucketName);
@@ -87,14 +86,17 @@ public class Local { //args[] == paths to input files
             MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(String.valueOf(new Date().getTime()));
             messageAttributes.put("localID", localID);
 
-            SendReceiveMessages.send(SendQueueUrl, "",messageAttributes);
+            SendReceiveMessages.send(SendQueueUrl, "", messageAttributes);
         }
 
 
     }
 
     private static void CreateManager(String managerName) {
-        String[] args = {managerName, "ami-0062dd78ec1ecd019", "manager"};
+        String script = "#!/bin/bash\n" +
+                "cd AWS-files\n" +
+                "java -cp 2-AWS-11.jar ass1/Manager\n";
+        String[] args = {managerName, "ami-0062dd78ec1ecd019", script, "manager"};
         CreateInstance.main(args);
     }
 

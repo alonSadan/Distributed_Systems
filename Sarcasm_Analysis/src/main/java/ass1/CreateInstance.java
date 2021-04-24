@@ -41,26 +41,26 @@ public class CreateInstance {
         final String USAGE =
                 "To run this example, supply an instance name and AMI image id\n" +
                         "Both values can be obtained from the AWS Console\n" +
+                        "you also need to provide a script(can be empty).\n" +
                         "another optional argument is the job of the instance. for example manager\n" +
-                        "Ex: CreateInstance <instance-name> <ami-image-id> <job>\n";
+                        "Ex: CreateInstance <instance-name> <ami-image-id> <script> <job>\n";
 
-        if (args.length != 2 && args.length != 3) {
+        if (args.length != 3 && args.length != 4) {
             System.out.println(USAGE);
             System.exit(1);
         }
 
         String name = args[0];
         String amiId = args[1];
+
+        String script = args[2];
         String job = "";
-        if (args.length == 3)
-            job = args[2];
+        if (args.length == 4)
+            job = args[3];
 
         // snippet-start:[ec2.java2.create_instance.main]
         Ec2Client ec2 = Ec2Client.create();
-
-        String script = "#!/bin/bash\n" +
-                "cd AWS-files\n" +
-                "java -cp 2-files-test-1.0-SNAPSHOT.jar CreateFile\n";
+        
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
                 .instanceType(InstanceType.T2_MICRO)
                 .imageId(amiId)

@@ -48,7 +48,7 @@ public class DistributeTask implements Runnable {
             n = Integer.parseInt(SendReceiveMessages.extractAttribute(message, "n"));
             // download the file
             List<Pair<String, String>> locations = parseLocalMessageLocations(message);
-            for (Pair<String, String> location : locations) {   //PAir<Key, Bucket>
+            for (Pair<String, String> location : locations) {   //PAir<bucket, key>
                 String filename = "input" + new Date().getTime();
                 String inputPath = "C:\\Users\\yotam\\Desktop\\" + filename;
                 S3ObjectOperations.getObject(location.getKey(), location.getValue(), inputPath);
@@ -84,7 +84,7 @@ public class DistributeTask implements Runnable {
         List<Pair<String, String>> locations = new ArrayList<Pair<String, String>>();
         for (int i = 0; i < split.length; i += 2) {
             if ((split.length) % 2 != 0) {
-                System.out.println("parsing message, but didnt receive an even number of array elements");
+                System.err.println("parsing message, but didnt receive an even number of array elements");
                 System.exit(1);
             }
 
@@ -95,7 +95,6 @@ public class DistributeTask implements Runnable {
 
     public static void distributeJobsToWorkers(Review review, String workersQueueURL) {
         final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
-        System.out.println("distributeJobsToWorkers:" + review.getId());
         MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(review.getId());
         messageAttributes.put("reviewId", reviewID);
 
@@ -110,7 +109,6 @@ public class DistributeTask implements Runnable {
     }
 
     public void createWorkers() {
-        System.out.println("createWorkers, numOfReviews is " + numOfReviews + "and n is" + n);
         int k = countInstances(ec2, "worker");
         numOfWorkers = numOfReviews / n + 1 - k; // the +1 is for integer division
         for (int i = 0; i < numOfWorkers; i++) {
@@ -119,12 +117,11 @@ public class DistributeTask implements Runnable {
                     "java -cp 2-AWS-11.jar ass1/Worker\n";
             String val_of_i = String.valueOf(i);
             String[] arguments = {"worker" + val_of_i, "ami-0701529d238b4ec2a", script, "worker"};
-           CreateInstance_yotam.main(arguments);
+           CreateInstance.main(arguments);
         }
     }
 
     public static int countInstances(Ec2Client ec2, String job) {
-        System.out.println("countInstances of type " + job);
         int count = 0;
         // Create a Filters to find a running manager/worker
         Filter runningFilter = Filter.builder()
@@ -152,30 +149,6 @@ public class DistributeTask implements Runnable {
         }
 
         return count;
-    }
-    
-
-    public List<String> getIntsancesIDsByJob(String job, List<String> workersIds) {
-        System.out.println("getIntsancesIDsByJob");
-        Filter jobFilter = Filter.builder()
-                .name("tag:job")
-                .values(job)
-                .build();
-
-        //Create a DescribeInstancesRequest
-        DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(jobFilter)
-                .instanceIds(workersIds)
-                .build();
-
-        // Find the running job instances and get ids
-        DescribeInstancesResponse response = ec2.describeInstances(request);
-        List<Instance> instances = new ArrayList<Instance>();
-        response.reservations().stream().forEach(reservation ->
-                instances.addAll(reservation.instances()));
-        List<String> instancesIds = new ArrayList<String>();
-        instances.stream().forEach(instance -> instancesIds.add(instance.instanceId()));
-        return instancesIds;
     }
 
 }//end of class

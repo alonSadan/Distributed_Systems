@@ -28,12 +28,8 @@ public class SendReceiveMessages {
         attributes.put("bucket", bucket);
         send(localQueueURL, "blah", attributes);
 
-        //terminateManager()
     }
-
-    public static void terminateManager() {
-
-    }
+    
 
     public static void send(String queueUrl, String messageBody, Map<String, MessageAttributeValue> attributes) {
         SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
@@ -70,13 +66,9 @@ public class SendReceiveMessages {
                 .queueUrl(queueUrl)
                 .build();
         List<Message> allmessages = sqs.receiveMessage(receiveRequest).messages();
-        System.out.println("all messages: " + allmessages.size());
         List<Message> filteredMessages = filterMessagesByAttributes(allmessages, attributeNames);
-        System.out.println("filtered messages: " + filteredMessages.size());
-        if (!filteredMessages.isEmpty()) {
-            return filteredMessages;
-        }
-        return null;
+
+        return filteredMessages;
     }
 
     public static Message receive(String queueUrl, String... attributeNames) { //returns one message by default
@@ -88,7 +80,6 @@ public class SendReceiveMessages {
     }
 
     public static List<Message> filterMessagesByAttributes(List<Message> messages, String... attributeNames) {
-        System.out.println("filterMessagesByAttributes");
         List<Message> filteredMessages = new ArrayList<Message>();
         boolean takeMessage;
         for (Message message : messages) {
