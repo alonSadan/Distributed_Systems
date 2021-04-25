@@ -118,14 +118,14 @@ public class DistributeTask implements Runnable {
     }
 
     public void createWorkers() {
-        String ImageID = "ami-0cea5609c91d4134b";
+        String ImageID = "ami-0af865417e7bdcbad";
 
         int k = countInstances(ec2, "worker");
         numOfWorkers = numOfReviews / n + 1 - k; // the +1 is for integer division
         for (int i = 0; i < numOfWorkers; i++) {
             String script = "#!/bin/bash\n" +
                     "cd AWS-files\n" +
-                    "java -jar worker.jar\n";
+                    "java -jar worker-1.0-jar-with-dependencies.jar\n";
             String val_of_i = String.valueOf(i);
             String[] arguments = {"worker" + val_of_i, ImageID, script, "worker"};
             CreateInstance.main(arguments);

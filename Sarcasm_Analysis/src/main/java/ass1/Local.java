@@ -88,8 +88,9 @@ public class Local { //args[] == paths to input files
         String SendQueueUrl = SendReceiveMessages.getQueueURLByName("localsendqueue");
         String messageBody = "";
         for (String key : keys) {
-            messageBody += (bucketName + ":" + key);
+            messageBody += (bucketName + ":" + key + ":" );
         }
+        messageBody = messageBody.substring(0, messageBody.length() - 1);
         MessageAttributeValue N = SendReceiveMessages.createStringAttributeValue(n);
         messageAttributes.put("n", N);
 
@@ -100,9 +101,9 @@ public class Local { //args[] == paths to input files
 
     private static void CreateManager(String managerName) {
         String script = "#!/bin/bash\n" +
-                "cd AWS-files\n" +
-                "java -cp 2-AWS-11.jar ass1/Manager\n";
-        String[] args = {managerName, "ami-067b9df29b2afff5e", script, "manager"};
+                "cd AWS-files;" +
+                "java -jar manager-1.0-jar-with-dependencies.jar;";
+        String[] args = {managerName, "ami-0c3fb9258c3e74880", script, "manager"};
         CreateInstance.main(args);
     }
 

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>worker</artifactId>
+    <artifactId>manager</artifactId>
     <version>1.0</version>
 
     <dependencyManagement>
@@ -174,7 +174,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ass1.Worker</mainClass>
+                            <mainClass>ass1.Manager</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -207,7 +207,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>ass1.Worker</mainClass>
+                            <mainClass>ass1.Manager</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
