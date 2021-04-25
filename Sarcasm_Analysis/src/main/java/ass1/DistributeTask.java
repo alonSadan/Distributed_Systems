@@ -8,7 +8,10 @@ import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,7 +53,7 @@ public class DistributeTask implements Runnable {
             List<Pair<String, String>> locations = parseLocalMessageLocations(message);
             for (Pair<String, String> location : locations) {   //PAir<bucket, key>
                 String filename = "input" + new Date().getTime();
-                String inputPath = "C:\\Users\\yotam\\Desktop\\" + filename;
+                String inputPath = System.getProperty("user.dir") + File.separator + filename;
                 S3ObjectOperations.getObject(location.getKey(), location.getValue(), inputPath);
                 // parse the message to get the reviews
                 JsonParser parser = new JsonParser(inputPath);
@@ -70,6 +73,12 @@ public class DistributeTask implements Runnable {
                         distributeJobsToWorkers(review, workersQueueURL);
                         local.incNumOfMessages(2);
                     }
+                }
+                Path path = Paths.get(inputPath);
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -116,7 +125,7 @@ public class DistributeTask implements Runnable {
         for (int i = 0; i < numOfWorkers; i++) {
             String script = "#!/bin/bash\n" +
                     "cd AWS-files\n" +
-                    "java -cp 2-AWS-11.jar ass1/Worker\n";
+                    "java -jar worker.jar\n";
             String val_of_i = String.valueOf(i);
             String[] arguments = {"worker" + val_of_i, ImageID, script, "worker"};
             CreateInstance.main(arguments);

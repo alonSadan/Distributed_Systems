@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>2-AWS</artifactId>
-    <version>11</version>
+    <artifactId>worker</artifactId>
+    <version>1.0</version>
 
     <dependencyManagement>
         <dependencies>
@@ -174,7 +174,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ass1.Manager</mainClass>
+                            <mainClass>ass1.Worker</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -207,7 +207,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>ass1.Manager</mainClass>
+                            <mainClass>ass1.Worker</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

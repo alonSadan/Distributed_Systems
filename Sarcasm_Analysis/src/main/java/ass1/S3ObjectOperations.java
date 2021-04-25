@@ -82,8 +82,13 @@ public class S3ObjectOperations {
         s3 = S3Client.builder().region(region).build();
         s3.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build(),
                 ResponseTransformer.toFile(Paths.get(output)));
+    }
 
-
+    public static boolean isObjectExistsOnS3(String bucket, String key) throws IOException {
+        Region region = Region.US_EAST_1;
+        s3 = S3Client.builder().region(region).build();
+        ListObjectsRequest request = ListObjectsRequest.builder().bucket(bucket).prefix(key).build();
+        return !s3.listObjects(request).contents().isEmpty();
     }
 
     public static String CreateBucket(String bucket) {

@@ -1,6 +1,7 @@
 package ass1;
 
 import static j2html.TagCreator.*;
+import static java.lang.Thread.sleep;
 
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
@@ -8,6 +9,9 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -84,8 +88,9 @@ public class CloudLocal {
         String outputName = "output-" + id + ".html";
         File output = createOutputFileToCWD(outputName);
         renderHTMLToFile(output);
-        uploadOutputFileToS3(outputName);
+        uploadOutputFileToS3AndDelete(outputName);
     }
+
 
     public File createOutputFileToCWD(String outputName){
         try {
@@ -111,7 +116,7 @@ public class CloudLocal {
         return null;
     }
 
-    public void uploadOutputFileToS3(String outputName) throws IOException {
+    public void uploadOutputFileToS3AndDelete(String outputName) throws IOException {
         //getBucket also creates the bucket if nessecery
         String outputBucket = S3ObjectOperations.getBucket("outputs-" + id);
 
@@ -124,6 +129,20 @@ public class CloudLocal {
         MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue(outputBucket);
         messageAttributes.put("bucket",bucket);
         SendReceiveMessages.send(localRecieveQueueUrl,"",messageAttributes);
+
+        deleteAfterUpload(outputName, outputBucket, key);
+    }
+
+    public void deleteAfterUpload(String outputPath, String bucket, String key) throws IOException {
+        while(! S3ObjectOperations.isObjectExistsOnS3(bucket, key)){
+
+        }
+        Path path = Paths.get(outputPath);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void renderHTMLToFile(File file) throws IOException {
