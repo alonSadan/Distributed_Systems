@@ -57,6 +57,7 @@ public class Local { //args[] == paths to input files
     }
 
     public static void downloadSummeryFile(Message doneMessage) throws IOException {
+        System.out.println("downloading html");
         String bucket = SendReceiveMessages.extractAttribute(doneMessage, "bucket");
         String key = SendReceiveMessages.extractAttribute(doneMessage, "key");
         S3ObjectOperations.getObject(bucket, key, System.getProperty("user.dir") + File.separator + "output-" + String.valueOf(new Date().getTime()));
@@ -102,7 +103,7 @@ public class Local { //args[] == paths to input files
     private static void CreateManager(String managerName) {
         String script = "#! /bin/bash\n" +
                 "java -jar /home/ec2-user/manager-1.0-jar-with-dependencies.jar\n";
-        String[] args = {managerName, "ami-0f4ea5f0f99589c8c", script, "manager"};
+        String[] args = {managerName, "ami-0bd8c2e98af63d7c8", script, "manager"};
         CreateInstance.main(args);
     }
 
@@ -119,14 +120,14 @@ public class Local { //args[] == paths to input files
                 .values("manager")
                 .build();
 
-        Filter initFilter = Filter.builder()
-                .name("instance-state-name")
-                .values("initializing")
-                .build();
+//        Filter initFilter = Filter.builder()
+//                .name("instance-state-name")
+//                .values("initializing")
+//                .build();
 
         //Create a DescribeInstancesRequest
         DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(managerFilter, runningFilter, initFilter)
+                .filters(managerFilter, runningFilter)
                 .build();
 
         // Find the running manager instances

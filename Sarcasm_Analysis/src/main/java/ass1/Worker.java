@@ -12,7 +12,6 @@ public class Worker {
 
     public static SentimentAnalysisHandler sentimentAnalysisHandler = new SentimentAnalysisHandler();
     public static NamedEntityRecognitionHandler namedEntityRecognitionHandler = new NamedEntityRecognitionHandler();
-    private static boolean stop;
 
     public static void main(String[] args) {
 

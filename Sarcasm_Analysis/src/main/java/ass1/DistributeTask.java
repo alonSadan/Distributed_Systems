@@ -137,25 +137,15 @@ public class DistributeTask implements Runnable {
 
     public static int countInstances(Ec2Client ec2, String job) {
         int count = 0;
-        // Create a Filters to find a running manager/worker
-        Filter runningFilter = Filter.builder()
-                .name("instance-state-name")
-                .values("running")
-                .build();
-
+        // Create a Filters to find workers
         Filter jobFilter = Filter.builder()
                 .name("tag:job")
                 .values(job)
                 .build();
 
-        Filter initFilter = Filter.builder()
-                .name("instance-state-name")
-                .values("initializing")
-                .build();
-
         //Create a DescribeInstancesRequest
         DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(jobFilter, runningFilter, initFilter)
+                .filters(jobFilter)
                 .build();
 
         // Find the filtered job instances

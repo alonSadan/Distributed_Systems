@@ -12,14 +12,6 @@ import java.util.*;
 
 public class ReceiveTask implements Runnable {
 
-    private int numOfReviews;
-    private Message message;
-    private Ec2Client ec2;
-    private int n;
-    private int numOfWorkers;
-    private List<String> workersIds;
-    // need a list of local ids
-    private String localId;
     private Map<String, CloudLocal> locals;
 
 
@@ -41,12 +33,11 @@ public class ReceiveTask implements Runnable {
     
     public void receiveMessagesFromWorkers() throws IOException {
         // getBucket can also create the bucket
-
         String answersURL = SendReceiveMessages.getQueueURLByName("answers");
         List<Message> answers = SendReceiveMessages.receiveMany(answersURL, 10, "reviewID", "job", "localID");
 
         for (Message ans : answers) {
-            String localid = SendReceiveMessages.extractAttribute(ans, "id");
+            String localId = SendReceiveMessages.extractAttribute(ans, "localID");
             if (locals.get(localId).updateValuesAndCheckDone(ans)) {
                 locals.get(localId).generateOutputFile();
             }
