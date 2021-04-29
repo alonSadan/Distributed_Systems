@@ -98,12 +98,11 @@ public class Local { //args[] == paths to input files
         messageAttributes.put("localID", localID);
         SendReceiveMessages.send(SendQueueUrl, messageBody, messageAttributes);
     }
-
+//
     private static void CreateManager(String managerName) {
-        String script = "#!/bin/bash\n" +
-                "cd AWS-files;" +
-                "java -jar manager-1.0-jar-with-dependencies.jar;";
-        String[] args = {managerName, "ami-0c3fb9258c3e74880", script, "manager"};
+        String script = "#! /bin/bash\n" +
+                "java -jar /home/ec2-user/manager-1.0-jar-with-dependencies.jar\n";
+        String[] args = {managerName, "ami-0f4ea5f0f99589c8c", script, "manager"};
         CreateInstance.main(args);
     }
 
@@ -120,9 +119,14 @@ public class Local { //args[] == paths to input files
                 .values("manager")
                 .build();
 
+        Filter initFilter = Filter.builder()
+                .name("instance-state-name")
+                .values("initializing")
+                .build();
+
         //Create a DescribeInstancesRequest
         DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(managerFilter, runningFilter)
+                .filters(managerFilter, runningFilter, initFilter)
                 .build();
 
         // Find the running manager instances

@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
@@ -22,6 +24,7 @@ import static java.util.Collections.emptyList;
 public class Manager {
     public static void main(String[] args) throws IOException, InterruptedException {
         // first parse the jason, then send the reviews
+        ReentrantLock lock = new ReentrantLock(); // synchronize createWorkers() to prevent too many workers
         int numOfReviews = 0;
         int numOfanswers = 0;
         final int MAX_T = 18;
@@ -39,7 +42,7 @@ public class Manager {
                 for (Message message : distributeMessages) {
                     String localid = SendReceiveMessages.extractAttribute(message, "id");
                     locals.put(localid, new CloudLocal(localid)); // each local sends a message only once
-                    Runnable r1 = new DistributeTask(message, locals.get(localid));
+                    Runnable r1 = new DistributeTask(message, locals.get(localid), lock);
                     SendReceiveMessages.deleteMessage(localQueueURL, message);
                     pool.execute(r1);
                 }

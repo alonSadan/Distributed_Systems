@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
@@ -28,9 +29,9 @@ public class DistributeTask implements Runnable {
     private int numOfWorkers;
     private List<String> workersIds;
     private CloudLocal local;
+    private final ReentrantLock lock;
 
-
-    public DistributeTask(Message msg, CloudLocal local) {
+    public DistributeTask(Message msg, CloudLocal local, ReentrantLock lock) {
 
         numOfReviews = 0;
         message = msg;
@@ -40,6 +41,7 @@ public class DistributeTask implements Runnable {
         numOfWorkers = 0;
         workersIds = new ArrayList<String>();
         this.local = local;
+        this.lock = lock;
     }
     // 1)make father receive multiple messages (2) split manager task into recive and distribute
     // (3) mkae threads work on all local aplictaions togther (4) keep local applcaiton in data structure
@@ -118,18 +120,19 @@ public class DistributeTask implements Runnable {
     }
 
     public void createWorkers() {
-        String ImageID = "ami-0af865417e7bdcbad";
-
+        String ImageID = "ami-065d6a9a537cdad1d";
+        lock.lock();
+        // we count the workers every input file, so failed initialized workers will be created again soon
         int k = countInstances(ec2, "worker");
         numOfWorkers = numOfReviews / n + 1 - k; // the +1 is for integer division
         for (int i = 0; i < numOfWorkers; i++) {
-            String script = "#!/bin/bash\n" +
-                    "cd AWS-files\n" +
-                    "java -jar worker-1.0-jar-with-dependencies.jar\n";
+            String script = "#! /bin/bash\n" +
+                    "java -jar /home/ec2-user/worker-1.0-jar-with-dependencies.jar\n";
             String val_of_i = String.valueOf(i);
             String[] arguments = {"worker" + val_of_i, ImageID, script, "worker"};
             CreateInstance.main(arguments);
         }
+        lock.unlock();
     }
 
     public static int countInstances(Ec2Client ec2, String job) {
@@ -145,12 +148,17 @@ public class DistributeTask implements Runnable {
                 .values(job)
                 .build();
 
-        //Create a DescribeInstancesRequest
-        DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(jobFilter, runningFilter)
+        Filter initFilter = Filter.builder()
+                .name("instance-state-name")
+                .values("initializing")
                 .build();
 
-        // Find the running job instances
+        //Create a DescribeInstancesRequest
+        DescribeInstancesRequest request = DescribeInstancesRequest.builder()
+                .filters(jobFilter, runningFilter, initFilter)
+                .build();
+
+        // Find the filtered job instances
         DescribeInstancesResponse response = ec2.describeInstances(request);
 
         for (Reservation reservation : response.reservations()) {
