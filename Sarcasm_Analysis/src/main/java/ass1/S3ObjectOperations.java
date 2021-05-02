@@ -65,7 +65,7 @@ public class S3ObjectOperations {
         Region region = Region.US_EAST_1;
         s3 = S3Client.builder().region(region).build();
 
-        String fileName = filePath; //"C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\input files\\B000EVOSE4.txt";
+        String fileName = filePath; //"C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\input files\\input5.txt";
         String key = String.valueOf(new Date().getTime());
 
         // Put Object

@@ -43,6 +43,7 @@ public class Local { //args[] == paths to input files
         Message doneMessage = waitForDoneMessage();
         downloadSummeryFile(doneMessage);
         if (shouldTerminate) {
+            System.out.println("terminating manager");
             terminateManager();
         }
     }
@@ -59,7 +60,7 @@ public class Local { //args[] == paths to input files
         System.out.println("downloading html");
         String bucket = SendReceiveMessages.extractAttribute(doneMessage, "bucket");
         String key = SendReceiveMessages.extractAttribute(doneMessage, "key");
-        S3ObjectOperations.getObject(bucket, key, System.getProperty("user.dir") + File.separator + "output-" + String.valueOf(new Date().getTime()));
+        S3ObjectOperations.getObject(bucket, key, System.getProperty("user.dir") + File.separator + "output-" + String.valueOf(new Date().getTime() +".html"));
     }
 
     public static Message waitForDoneMessage() {
