@@ -15,7 +15,7 @@ import static java.lang.Thread.sleep;
 
 public class Local { //args[] == paths to input files
 
-    private static String ID  = String.valueOf(new Date().getTime());
+    private static String ID = String.valueOf(new Date().getTime());
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
@@ -42,12 +42,12 @@ public class Local { //args[] == paths to input files
         SendInputsLocationsToManager(inputs, n);
         Message doneMessage = waitForDoneMessage();
         downloadSummeryFile(doneMessage);
-        if(shouldTerminate){
+        if (shouldTerminate) {
             terminateManager();
         }
     }
 
-    public static void terminateManager(){
+    public static void terminateManager() {
         String SendQueueUrl = SendReceiveMessages.getQueueURLByName("localsendqueue");
         final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
         MessageAttributeValue terminate = SendReceiveMessages.createStringAttributeValue("true");
@@ -68,16 +68,19 @@ public class Local { //args[] == paths to input files
         Message doneMessage = null;
         while (!stop) { //busy wait until we get a done msg
             doneMessage = SendReceiveMessages.receive(localRecieveQueueUrl, "bucket", "key", "localID");
-            String localID = SendReceiveMessages.extractAttribute(doneMessage,"localID");
-            if (doneMessage != null && localID != null && localID.equals(ID)) {
-                stop = true;
-            }
-            try {
-                sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (doneMessage != null) {
+                String localID = SendReceiveMessages.extractAttribute(doneMessage, "localID");
+                if (localID != null && localID.equals(ID)) {
+                    stop = true;
+                }
+                try {
+                    sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
+
         return doneMessage;
     }
 
@@ -89,7 +92,7 @@ public class Local { //args[] == paths to input files
         String SendQueueUrl = SendReceiveMessages.getQueueURLByName("localsendqueue");
         String messageBody = "";
         for (String key : keys) {
-            messageBody += (bucketName + ":" + key + ":" );
+            messageBody += (bucketName + ":" + key + ":");
         }
         messageBody = messageBody.substring(0, messageBody.length() - 1);
         MessageAttributeValue N = SendReceiveMessages.createStringAttributeValue(n);
@@ -99,25 +102,31 @@ public class Local { //args[] == paths to input files
         messageAttributes.put("localID", localID);
         SendReceiveMessages.send(SendQueueUrl, messageBody, messageAttributes);
     }
-//
+
+    //
     private static void CreateManager(String managerName) {
         String script = "#! /bin/bash\n" +
                 "java -jar /home/ec2-user/manager-1.0-jar-with-dependencies.jar\n";
-        String[] args = {managerName, "ami-0eed7b9090ae0b59f", script, "manager"};
+        String[] args = {managerName, "ami-028594b4ff4a459c0", script, "manager"};
         CreateInstance.main(args);
     }
 
     public static boolean managerExists(Ec2Client ec2) {
 
         // Create a Filters to find a manager
-        Filter managerFilter = Filter.builder()
+        Filter filter1 = Filter.builder()
                 .name("tag:job")
                 .values("manager")
                 .build();
 
+        Filter filter2 = Filter.builder()
+                .name("instance-state-name")
+                .values("initializing","running","pending")
+                .build();
+
         //Create a DescribeInstancesRequest
         DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(managerFilter)
+                .filters(filter1, filter2)
                 .build();
 
         // Find the running manager instances
@@ -131,5 +140,4 @@ public class Local { //args[] == paths to input files
 
         return false;
     }
-
 }
