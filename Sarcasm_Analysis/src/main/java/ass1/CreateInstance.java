@@ -64,7 +64,7 @@ public class CreateInstance {
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
                 .instanceType(InstanceType.T2_MICRO)
                 .imageId(amiId)
-                .iamInstanceProfile(IamInstanceProfileSpecification.builder().name("Ass1FullAccess").build())
+                .iamInstanceProfile(IamInstanceProfileSpecification.builder().name("ass1full").build())
                 .maxCount(1)
                 .minCount(1)
                 .userData(Base64.getEncoder().encodeToString(script.getBytes()))

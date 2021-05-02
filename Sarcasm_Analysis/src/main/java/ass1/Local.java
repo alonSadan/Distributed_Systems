@@ -1,11 +1,7 @@
 package ass1;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -39,9 +35,9 @@ public class Local { //args[] == paths to input files
         }
 
         Ec2Client ec2 = Ec2Client.create();
-//        if (!managerExists(ec2)) {
-//            CreateManager("manager");
-//        }
+        if (!managerExists(ec2)) {
+            CreateManager("manager");
+        }
 
         SendInputsLocationsToManager(inputs, n);
         Message doneMessage = waitForDoneMessage();
@@ -107,27 +103,17 @@ public class Local { //args[] == paths to input files
     private static void CreateManager(String managerName) {
         String script = "#! /bin/bash\n" +
                 "java -jar /home/ec2-user/manager-1.0-jar-with-dependencies.jar\n";
-        String[] args = {managerName, "ami-0bd8c2e98af63d7c8", script, "manager"};
+        String[] args = {managerName, "ami-0eed7b9090ae0b59f", script, "manager"};
         CreateInstance.main(args);
     }
 
     public static boolean managerExists(Ec2Client ec2) {
 
-        // Create a Filters to find a running manager
-//        Filter runningFilter = Filter.builder()
-//                .name("instance-state-name")
-//                .values("running")
-//                .build();
-
+        // Create a Filters to find a manager
         Filter managerFilter = Filter.builder()
                 .name("tag:job")
                 .values("manager")
                 .build();
-
-//        Filter initFilter = Filter.builder()
-//                .name("instance-state-name")
-//                .values("initializing")
-//                .build();
 
         //Create a DescribeInstancesRequest
         DescribeInstancesRequest request = DescribeInstancesRequest.builder()
