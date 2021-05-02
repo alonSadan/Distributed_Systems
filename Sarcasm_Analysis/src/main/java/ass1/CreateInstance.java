@@ -60,7 +60,7 @@ public class CreateInstance {
         Ec2Client ec2 = Ec2Client.create();
 
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
-                .instanceType(InstanceType.T2_MICRO)
+                .instanceType(InstanceType.T2_SMALL)
                 .imageId(amiId)
                 .iamInstanceProfile(IamInstanceProfileSpecification.builder().arn("arn:aws:iam::855350177051:instance-profile/ass1full").build())
                 .maxCount(1)
