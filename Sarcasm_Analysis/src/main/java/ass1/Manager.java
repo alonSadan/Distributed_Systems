@@ -7,19 +7,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
-import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
-import static java.util.Collections.emptyList;
 
 public class Manager {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -32,24 +27,34 @@ public class Manager {
         Map<String, CloudLocal> locals = new HashMap<String, CloudLocal>();
 
         while (!shouldTerminate()) { //default visibilty timeout is 30 seconds. So receive is thread safe
-            String workersQueueURL = SendReceiveMessages.createSQS("jobs");
-            List<Message> distributeMessages = SendReceiveMessages.receiveMany(localQueueURL, 10, "n", "localID");
-
-            if (!distributeMessages.isEmpty()) {
-                for (Message message : distributeMessages) {
-                    String localid = SendReceiveMessages.extractAttribute(message, "localID");
-                    locals.put(localid, new CloudLocal(localid)); // each local sends a message only once
-                    Runnable r1 = new DistributeTask(message, locals.get(localid), lock);
-                    SendReceiveMessages.deleteMessage(localQueueURL, message);
-                    pool.execute(r1);
-                }
-                for (int i = 0; i < 5; i++) {
-                    Runnable r2 = new ReceiveTask(locals);
-                    pool.execute(r2);
-                }
-            }
+            createDistributeTasks(localQueueURL, locals, lock, pool);
+            createReceiveTasks(locals, pool);
         }
         terminate(ec2, pool, locals);
+    }
+
+    public static void createReceiveTasks(Map<String, CloudLocal> locals, ExecutorService pool) {
+        if (!locals.isEmpty()) {
+            System.out.println("created two receive threads");
+            for (int i = 0; i < 2; i++) {
+                Runnable r2 = new ReceiveTask(locals);
+                pool.execute(r2);
+            }
+        }
+    }
+
+    public static void createDistributeTasks(String localQueueURL, Map<String, CloudLocal> locals, ReentrantLock lock, ExecutorService pool) {
+        List<Message> distributeMessages = SendReceiveMessages.receiveMany(localQueueURL, 10, "n", "localID");
+
+        if (!distributeMessages.isEmpty()) {
+            for (Message message : distributeMessages) {
+                String localid = SendReceiveMessages.extractAttribute(message, "localID");
+                locals.put(localid, new CloudLocal(localid)); // each local sends a message only once
+                Runnable r1 = new DistributeTask(message, locals.get(localid), lock);
+                SendReceiveMessages.deleteMessage(localQueueURL, message);
+                pool.execute(r1);
+            }
+        }
     }
 
     public static List<Pair<String, String>> parseLocalMessageLocations(Message message) {

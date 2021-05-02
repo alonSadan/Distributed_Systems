@@ -27,7 +27,6 @@ public class DistributeTask implements Runnable {
     private Ec2Client ec2;
     private int n;
     private int numOfWorkers;
-    private List<String> workersIds;
     private CloudLocal local;
     private final ReentrantLock lock;
 
@@ -39,7 +38,6 @@ public class DistributeTask implements Runnable {
         ec2 = Ec2Client.create();
         n = 0;
         numOfWorkers = 0;
-        workersIds = new ArrayList<String>();
         this.local = local;
         this.lock = lock;
     }
@@ -68,7 +66,7 @@ public class DistributeTask implements Runnable {
                     numOfReviews += reviews.size();
 
                     // create m-k workers
-                    createWorkers();
+                    //createWorkers();
 
                     for (Review review : reviews) {
                         // send each message twice, once for ner and once for sentiment
@@ -104,10 +102,13 @@ public class DistributeTask implements Runnable {
         return locations;
     }
 
-    public static void distributeJobsToWorkers(Review review, String workersQueueURL) {
+    public void distributeJobsToWorkers(Review review, String workersQueueURL) {
         final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
         MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(review.getId());
-        messageAttributes.put("reviewId", reviewID);
+        messageAttributes.put("reviewID", reviewID);
+
+        MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(local.getId());
+        messageAttributes.put("localID", localID);
 
         MessageAttributeValue NER = SendReceiveMessages.createStringAttributeValue("NER");
         messageAttributes.put("job", NER);

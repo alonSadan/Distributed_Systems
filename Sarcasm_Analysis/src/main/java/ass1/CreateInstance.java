@@ -61,13 +61,10 @@ public class CreateInstance {
         // snippet-start:[ec2.java2.create_instance.main]
         Ec2Client ec2 = Ec2Client.create();
 
-        //IamInstanceProfileSpecification iamInstanceProfileSpecification = IamInstanceProfileSpecification.builder().arn("arn:aws:iam::332668175771:instance-profile/Ass1FullAccess").build();
-
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
                 .instanceType(InstanceType.T2_MICRO)
                 .imageId(amiId)
                 .iamInstanceProfile(IamInstanceProfileSpecification.builder().name("Ass1FullAccess").build())
-             //   .iamInstanceProfile(iamInstanceProfileSpecification)
                 .maxCount(1)
                 .minCount(1)
                 .userData(Base64.getEncoder().encodeToString(script.getBytes()))

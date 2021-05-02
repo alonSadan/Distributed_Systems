@@ -22,25 +22,6 @@ public class CloudLocal {
     private AtomicBoolean done;
     private Map<String, Review> reviews;
 
-
-    public static void main(String[] args) throws IOException {
-        CloudLocal cl = new CloudLocal("alon");
-        String inputPath = "C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Sarcasm_Analysis\\input files\\testInput.txt";
-        JsonParser parser = new JsonParser(inputPath);
-        List<Review> rvws;
-        while (parser.hasNextInput()) {
-            rvws = parser.getNextReviews();
-            cl.setReviewsFromList(rvws);
-        }
-
-        for(Review review: cl.getReviews().values()){
-            review.setSentiment(3);
-            review.setNamedEntityRecognition("[ALON:PERSON;LACHISH:PLACE]");
-        }
-        cl.generateOutputFile();
-
-    }
-
     public CloudLocal(String ID) {
         id = ID;
         numOfAnswers = 0;
@@ -128,7 +109,10 @@ public class CloudLocal {
         messageAttributes.put("key",KEY);
         MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue(outputBucket);
         messageAttributes.put("bucket",bucket);
-        SendReceiveMessages.send(localRecieveQueueUrl,"",messageAttributes);
+        MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(getId());
+        messageAttributes.put("localID",localID);
+
+        SendReceiveMessages.send(localRecieveQueueUrl," ",messageAttributes);
 
         deleteAfterUpload(outputName, outputBucket, key);
     }

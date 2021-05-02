@@ -18,6 +18,9 @@ import static java.lang.Thread.sleep;
 
 
 public class Local { //args[] == paths to input files
+
+    private static String ID  = String.valueOf(new Date().getTime());
+
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             System.out.println("no input files");
@@ -36,9 +39,9 @@ public class Local { //args[] == paths to input files
         }
 
         Ec2Client ec2 = Ec2Client.create();
-        if (!managerExists(ec2)) {
-            CreateManager("manager");
-        }
+//        if (!managerExists(ec2)) {
+//            CreateManager("manager");
+//        }
 
         SendInputsLocationsToManager(inputs, n);
         Message doneMessage = waitForDoneMessage();
@@ -68,8 +71,9 @@ public class Local { //args[] == paths to input files
         boolean stop = false;
         Message doneMessage = null;
         while (!stop) { //busy wait until we get a done msg
-            doneMessage = SendReceiveMessages.receive(localRecieveQueueUrl, "bucket", "key");
-            if (doneMessage != null) {
+            doneMessage = SendReceiveMessages.receive(localRecieveQueueUrl, "bucket", "key", "localID");
+            String localID = SendReceiveMessages.extractAttribute(doneMessage,"localID");
+            if (doneMessage != null && localID != null && localID.equals(ID)) {
                 stop = true;
             }
             try {
@@ -95,7 +99,7 @@ public class Local { //args[] == paths to input files
         MessageAttributeValue N = SendReceiveMessages.createStringAttributeValue(n);
         messageAttributes.put("n", N);
 
-        MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(String.valueOf(new Date().getTime()));
+        MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(ID);
         messageAttributes.put("localID", localID);
         SendReceiveMessages.send(SendQueueUrl, messageBody, messageAttributes);
     }
@@ -110,10 +114,10 @@ public class Local { //args[] == paths to input files
     public static boolean managerExists(Ec2Client ec2) {
 
         // Create a Filters to find a running manager
-        Filter runningFilter = Filter.builder()
-                .name("instance-state-name")
-                .values("running")
-                .build();
+//        Filter runningFilter = Filter.builder()
+//                .name("instance-state-name")
+//                .values("running")
+//                .build();
 
         Filter managerFilter = Filter.builder()
                 .name("tag:job")
@@ -127,7 +131,7 @@ public class Local { //args[] == paths to input files
 
         //Create a DescribeInstancesRequest
         DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(managerFilter, runningFilter)
+                .filters(managerFilter)
                 .build();
 
         // Find the running manager instances

@@ -29,7 +29,7 @@ public class Worker {
 
             String revID = SendReceiveMessages.extractAttribute(jobMessage, "reviewID");
             MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(revID);
-            messageAttributes.put("reviewId", reviewID);
+            messageAttributes.put("reviewID", reviewID);
 
             String job = SendReceiveMessages.extractAttribute(jobMessage, "job");
             MessageAttributeValue jobAttributeValue = SendReceiveMessages.createStringAttributeValue(job);
@@ -37,11 +37,15 @@ public class Worker {
 
             String localID = SendReceiveMessages.extractAttribute(jobMessage, "localID");
             MessageAttributeValue localIDAttributeValue = SendReceiveMessages.createStringAttributeValue(localID);
-            messageAttributes.put("localID", jobAttributeValue);
+            messageAttributes.put("localID", localIDAttributeValue);
 
             if (job.equals("NER")) {
 
                 String ner = namedEntityRecognitionHandler.getEntities(jobMessage.body());
+                if (ner.equals("")){
+                    ner= " ";
+                }
+
                 SendReceiveMessages.send(answersQueueURL,
                         ner,
                         messageAttributes);

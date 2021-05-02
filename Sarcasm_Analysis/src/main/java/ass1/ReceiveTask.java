@@ -37,9 +37,10 @@ public class ReceiveTask implements Runnable {
         List<Message> answers = SendReceiveMessages.receiveMany(answersURL, 10, "reviewID", "job", "localID");
 
         for (Message ans : answers) {
-            String localId = SendReceiveMessages.extractAttribute(ans, "localID");
-            if (locals.get(localId).updateValuesAndCheckDone(ans)) {
-                locals.get(localId).generateOutputFile();
+            String localID = SendReceiveMessages.extractAttribute(ans, "localID");
+            if (locals.get(localID).updateValuesAndCheckDone(ans)) {
+                locals.get(localID).generateOutputFile();
+                SendReceiveMessages.deleteMessage(answersURL, ans);
             }
         }
     }
