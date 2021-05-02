@@ -26,8 +26,6 @@ package ass1;
 
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.protocols.query.*;
 
 
 import java.util.Base64;
@@ -60,7 +58,6 @@ public class CreateInstance {
 
         // snippet-start:[ec2.java2.create_instance.main]
         Ec2Client ec2 = Ec2Client.create();
-
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
                 .instanceType(InstanceType.T2_MICRO)
                 .imageId(amiId)
