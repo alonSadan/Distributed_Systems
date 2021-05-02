@@ -6,8 +6,6 @@ import software.amazon.awssdk.services.sqs.model.*;
 
 import java.util.*;
 
-import static java.util.Collections.emptyList;
-
 // snippet-end:[sqs.java2.send_recieve_messages.import]
 // snippet-start:[sqs.java2.send_recieve_messages.main]
 public class SendReceiveMessages {
@@ -40,24 +38,7 @@ public class SendReceiveMessages {
                 .build();
         sqs.sendMessage(send_msg_request);
     }
-//        // Send multiple messages to the queue
-//        SendMessageBatchRequest send_batch_request = SendMessageBatchRequest.builder()
-//                .queueUrl(queueUrl)
-//                .entries(
-//                        SendMessageBatchRequestEntry.builder()
-//                                .messageBody("Hello from message 1")
-//                                .delaySeconds(1)
-//                                .id("msg_1")
-//                                .build()
-//                        ,
-//                        SendMessageBatchRequestEntry.builder()
-//                                .messageBody("Hello from message 2")
-//                                .delaySeconds(10)
-//                                .id("msg_2")
-//                                .build())
-//                .build();
-//        sqs.sendMessageBatch(send_batch_request);
-
+    
     public static List<Message> receiveMany(String queueUrl, int maxNumberOfMessages, String... attributeNames) { //returns one message by default
         SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
         ReceiveMessageRequest receiveRequest = ReceiveMessageRequest.builder()

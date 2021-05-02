@@ -1,12 +1,7 @@
 package ass1;
 
 
-import software.amazon.awssdk.services.ec2.Ec2Client;
-import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
-import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 

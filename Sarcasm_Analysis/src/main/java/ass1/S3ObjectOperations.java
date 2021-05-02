@@ -21,17 +21,6 @@ import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
-
-//import com.amazonaws.AmazonServiceException;
-//import com.amazonaws.SdkClientException;
-//import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-//import com.amazonaws.regions.Regions;
-//import com.amazonaws.services.s3.AmazonS3;
-//import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-//import com.amazonaws.services.s3.transfer.TransferManager;
-//import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-//import com.amazonaws.services.s3.transfer.Upload;
 
 import java.io.File;
 import java.io.IOException;
