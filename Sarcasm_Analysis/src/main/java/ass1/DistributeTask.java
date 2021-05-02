@@ -140,9 +140,14 @@ public class DistributeTask implements Runnable {
                 .values(job)
                 .build();
 
+        Filter stateFilter = Filter.builder()
+                .name("instance-state-name")
+                .values("initializing", "running", "pending")
+                .build();
+
         //Create a DescribeInstancesRequest
         DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(jobFilter)
+                .filters(jobFilter, stateFilter)
                 .build();
 
         // Find the filtered job instances
