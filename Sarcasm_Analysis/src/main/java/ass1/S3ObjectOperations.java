@@ -23,7 +23,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
-
 //import com.amazonaws.AmazonServiceException;
 //import com.amazonaws.SdkClientException;
 //import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -38,12 +37,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 
 public class S3ObjectOperations {
 
     private static S3Client s3;
+
+    public S3ObjectOperations() {
+        Region region = Region.US_EAST_1;
+        s3 = S3Client.builder().region(region).build();
+    }
 
     public static String[] PutObjects(String[] files, String bucketName) throws IOException {
         String keys[] = new String[files.length];
@@ -54,12 +60,13 @@ public class S3ObjectOperations {
         return keys;
     }
 
+
     public static String PutObject(String filePath, String bucket) throws IOException {
         Region region = Region.US_EAST_1;
         s3 = S3Client.builder().region(region).build();
 
         String fileName = filePath; //"C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\input files\\B000EVOSE4.txt";
-        String key = filePath;
+        String key = String.valueOf(new Date().getTime());
 
         // Put Object
         s3.putObject(PutObjectRequest.builder().bucket(bucket).key(key)
@@ -70,78 +77,23 @@ public class S3ObjectOperations {
     }
 
     // Get Object
-    public static void getObject(String key, String bucket, String output) throws IOException {
-       s3.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build(),
+    public static void getObject(String bucket, String key, String output) throws IOException {
+        Region region = Region.US_EAST_1;
+        s3 = S3Client.builder().region(region).build();
+        s3.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build(),
                 ResponseTransformer.toFile(Paths.get(output)));
     }
 
-//
-//
-////        // Multipart Upload a file
-////        String multipartKey = "multiPartKey";
-////        multipartUpload(bucket, multipartKey);
-//
-//        // List all objects in bucket
-//
-//        // Use manual pagination
-//        ListObjectsV2Request listObjectsReqManual = ListObjectsV2Request.builder()
-//                .bucket(bucket)
-//                .maxKeys(1)
-//                .build();
-//
-//        boolean done = false;
-//        while (!done) {
-//            ListObjectsV2Response listObjResponse = s3.listObjectsV2(listObjectsReqManual);
-//            for (S3Object content : listObjResponse.contents()) {
-//                System.out.println(content.key());
-//            }
-//
-//            if (listObjResponse.nextContinuationToken() == null) {
-//                done = true;
-//            }
-//
-//            listObjectsReqManual = listObjectsReqManual.toBuilder()
-//                    .continuationToken(listObjResponse.nextContinuationToken())
-//                    .build();
-//        }
-//        // Build the list objects request
-//        ListObjectsV2Request listReq = ListObjectsV2Request.builder()
-//                .bucket(bucket)
-//                .maxKeys(1)
-//                .build();
-//
-//        ListObjectsV2Iterable listRes = s3.listObjectsV2Paginator(listReq);
-//        // Process response pages
-//        listRes.stream()
-//                .flatMap(r -> r.contents().stream())
-//                .forEach(content -> System.out.println(" Key: " + content.key() + " size = " + content.size()));
-//
-//        // Helper method to work with paginated collection of items directly
-//        listRes.contents().stream()
-//                .forEach(content -> System.out.println(" Key: " + content.key() + " size = " + content.size()));
-//        // Use simple for loop if stream is not necessary
-//        for (S3Object content : listRes.contents()) {
-//            System.out.println(" Key: " + content.key() + " size = " + content.size());
-//        }
-//
-//        // Get Object
-//        s3.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build(),
-//                ResponseTransformer.toFile(Paths.get("multiPartKey")));
-    // snippet-end:[s3.java2.s3_object_operations.download]
-//
-//        // Delete Object
-//        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucket).key(key).build();
-//        s3.deleteObject(deleteObjectRequest);
-//
-//        // Delete Object
-//        deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucket).key("multipartKey").build();
-//        s3.deleteObject(deleteObjectRequest);
-//
-//        deleteBucket(bucket);
-
+    public static boolean isObjectExistsOnS3(String bucket, String key) throws IOException {
+        Region region = Region.US_EAST_1;
+        s3 = S3Client.builder().region(region).build();
+        ListObjectsRequest request = ListObjectsRequest.builder().bucket(bucket).prefix(key).build();
+        return !s3.listObjects(request).contents().isEmpty();
+    }
 
     public static String CreateBucket(String bucket) {
-
+        Region region = Region.US_EAST_1;
+        s3 = S3Client.builder().region(region).build();
         bucket = bucket + System.currentTimeMillis();
         s3.createBucket(CreateBucketRequest
                 .builder()
@@ -155,14 +107,21 @@ public class S3ObjectOperations {
         return bucket;
     }
 
+    public static String getBucket(String bucket) {
+        List<Bucket> buckets = s3.listBuckets().buckets();
+        for (Bucket b : buckets) {
+            if (b.name().equals(bucket))
+                return bucket;
+        }
+        return CreateBucket(bucket);
+    }
+
     private static void deleteBucket(String bucket) {
         DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucket).build();
         s3.deleteBucket(deleteBucketRequest);
     }
 
-    /**
-     * Uploading an object to S3 in parts
-     */
+
     private static void multipartUpload(String bucketName, String key) throws IOException {
 
         int mb = 1024 * 1024;
@@ -172,7 +131,6 @@ public class S3ObjectOperations {
                 .build();
         CreateMultipartUploadResponse response = s3.createMultipartUpload(createMultipartUploadRequest);
         String uploadId = response.uploadId();
-        System.out.println(uploadId);
 
         // Upload all the different parts of the object
         UploadPartRequest uploadPartRequest1 = UploadPartRequest.builder().bucket(bucketName).key(key)

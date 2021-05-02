@@ -17,6 +17,8 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
+
+
 public class NamedEntityRecognitionHandler {
 
     public String getEntities(String review) {
@@ -45,13 +47,16 @@ public class NamedEntityRecognitionHandler {
                 // this is the NER label of the token
                 String ne = token.get(NamedEntityTagAnnotation.class);
                 if(!ne.equals("O")) {
-                    System.out.println("ne is :" + ne);
                     entities = entities + (word + ":" + ne + ", ");
                 }
             }
         }
 
-        // return result string without the last space and comma
-        return entities.substring(0, entities.length() - 2);
+        if(entities.length() > 0){
+            entities.substring(0, entities.length() - 2);
+        }
+        // return result sting without the last space and comma
+
+        return entities;
     }
 }
