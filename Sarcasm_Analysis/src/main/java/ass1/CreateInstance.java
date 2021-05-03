@@ -20,28 +20,21 @@
  * permissions and limitations under the License.
  */
 package ass1;
-// snippet-start:[ec2.java2.create_instance.complete]
 
-// snippet-start:[ec2.java2.create_instance.import]
-
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 
-
 import java.util.Base64;
-// snippet-end:[ec2.java2.create_instance.import]
 
 /**
  * Creates an EC2 instance
  */
 public class CreateInstance {
+
     public static void main(String[] args) {
         final String USAGE =
-                "To run this example, supply an instance name and AMI image id\n" +
-                        "Both values can be obtained from the AWS Console\n" +
-                        "you also need to provide a script(can be empty).\n" +
-                        "another optional argument is the job of the instance. for example manager\n" +
-                        "Ex: CreateInstance <instance-name> <ami-image-id> <script> <job>\n";
+                "usage:  java -jar local-1.0-jar-with-dependencies.jar inputFileName1... inputFileNameN outputFileName1... outputFileNameN n [terminate]";
 
         if (args.length != 3 && args.length != 4) {
             System.out.println(USAGE);
@@ -56,10 +49,10 @@ public class CreateInstance {
         if (args.length == 4)
             job = args[3];
 
-        // snippet-start:[ec2.java2.create_instance.main]
-        Ec2Client ec2 = Ec2Client.create();
+        //InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        Ec2Client ec2 = Ec2Client.builder().region(Region.US_EAST_1).build();
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
-                .instanceType(InstanceType.T2_MICRO)
+                .instanceType(InstanceType.T2_SMALL)
                 .imageId(amiId)
                 .iamInstanceProfile(IamInstanceProfileSpecification.builder().arn("arn:aws:iam::855350177051:instance-profile/ass1full").build())
                 .maxCount(1)
@@ -77,15 +70,10 @@ public class CreateInstance {
             addTag("job", job, instanceId, amiId, ec2);
         }
 
-        // snippet-end:[ec2.java2.create_instance.main]
-        System.out.println("Done!");
+        System.out.println("Instance created!");
     }
 
-
-// snippet-end:[ec2.java2.create_instance.complete]
-
     public static void addTag(String key, String value, String instanceId, String amiId, Ec2Client ec2) {
-
         Tag tag = Tag.builder()
                 .key(key)
                 .value(value)

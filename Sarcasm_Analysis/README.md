@@ -36,6 +36,7 @@ In our app we had blah queues:
 
 - _Worker_: T2_MEDIUM, ami-01410adf56d01f03b 
 - _Manager_: T2_MICRO, ami-0b9a720251e51c0fa
+- n = 300. time to run - 8.5 minutes.
 
 We chose to use T2_MEDIUM for the workers to handle the required processing power of the stanford library.
 ### Local flow
