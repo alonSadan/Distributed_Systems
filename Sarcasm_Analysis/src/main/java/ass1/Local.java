@@ -54,6 +54,7 @@ public class Local { //args[] == paths to input files
         MessageAttributeValue terminate = SendReceiveMessages.createStringAttributeValue("true");
         messageAttributes.put("terminate", terminate);
         SendReceiveMessages.send(SendQueueUrl, "terminate", messageAttributes);
+        ClearS3AndSQS.clear();
     }
 
     public static void downloadSummeryFile(Message doneMessage) throws IOException {
