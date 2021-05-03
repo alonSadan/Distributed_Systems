@@ -26,8 +26,6 @@ package ass1;
 
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.protocols.query.*;
 
 
 import java.util.Base64;
@@ -60,11 +58,10 @@ public class CreateInstance {
 
         // snippet-start:[ec2.java2.create_instance.main]
         Ec2Client ec2 = Ec2Client.create();
-
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
                 .instanceType(InstanceType.T2_MICRO)
                 .imageId(amiId)
-                .iamInstanceProfile(IamInstanceProfileSpecification.builder().name("Ass1FullAccess").build())
+                .iamInstanceProfile(IamInstanceProfileSpecification.builder().arn("arn:aws:iam::332668175771:instance-profile/Ass1FullAccess").build())
                 .maxCount(1)
                 .minCount(1)
                 .userData(Base64.getEncoder().encodeToString(script.getBytes()))
@@ -81,7 +78,7 @@ public class CreateInstance {
         }
 
         // snippet-end:[ec2.java2.create_instance.main]
-        System.out.println("Done!");
+        System.out.println("Instance created!");
     }
 
 

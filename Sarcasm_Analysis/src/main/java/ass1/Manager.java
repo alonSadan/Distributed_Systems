@@ -35,7 +35,6 @@ public class Manager {
 
     public static void createReceiveTasks(Map<String, CloudLocal> locals, ExecutorService pool) {
         if (!locals.isEmpty()) {
-            System.out.println("created two receive threads");
             for (int i = 0; i < 2; i++) {
                 Runnable r2 = new ReceiveTask(locals);
                 pool.execute(r2);

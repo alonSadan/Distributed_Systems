@@ -21,17 +21,6 @@ import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
-
-//import com.amazonaws.AmazonServiceException;
-//import com.amazonaws.SdkClientException;
-//import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-//import com.amazonaws.regions.Regions;
-//import com.amazonaws.services.s3.AmazonS3;
-//import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-//import com.amazonaws.services.s3.transfer.TransferManager;
-//import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-//import com.amazonaws.services.s3.transfer.Upload;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +54,7 @@ public class S3ObjectOperations {
         Region region = Region.US_EAST_1;
         s3 = S3Client.builder().region(region).build();
 
-        String fileName = filePath; //"C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\input files\\B000EVOSE4.txt";
+        String fileName = filePath; //"C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\input files\\input5.txt";
         String key = String.valueOf(new Date().getTime());
 
         // Put Object

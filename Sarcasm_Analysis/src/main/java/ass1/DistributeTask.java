@@ -14,10 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
-import static java.lang.Thread.sleep;
-import static java.util.Collections.emptyList;
 
 
 public class DistributeTask implements Runnable {
@@ -66,7 +62,7 @@ public class DistributeTask implements Runnable {
                     numOfReviews += reviews.size();
 
                     // create m-k workers
-                    //createWorkers();
+                    createWorkers();
 
                     for (Review review : reviews) {
                         // send each message twice, once for ner and once for sentiment
@@ -121,7 +117,7 @@ public class DistributeTask implements Runnable {
     }
 
     public void createWorkers() {
-        String ImageID = "ami-065d6a9a537cdad1d";
+        String ImageID = "ami-01410adf56d01f03b";
         lock.lock();
         // we count the workers every input file, so failed initialized workers will be created again soon
         int k = countInstances(ec2, "worker");
@@ -144,9 +140,14 @@ public class DistributeTask implements Runnable {
                 .values(job)
                 .build();
 
+        Filter stateFilter = Filter.builder()
+                .name("instance-state-name")
+                .values("initializing", "running", "pending")
+                .build();
+
         //Create a DescribeInstancesRequest
         DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-                .filters(jobFilter)
+                .filters(jobFilter, stateFilter)
                 .build();
 
         // Find the filtered job instances

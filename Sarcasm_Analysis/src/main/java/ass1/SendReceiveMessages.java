@@ -21,7 +21,7 @@ public class SendReceiveMessages {
         MessageAttributeValue n = SendReceiveMessages.createStringAttributeValue("100");
         attributes.put("n", n);
 
-        MessageAttributeValue key = SendReceiveMessages.createStringAttributeValue("input1.txt");
+        MessageAttributeValue key = SendReceiveMessages.createStringAttributeValue("input1-short.txt");
         attributes.put("key", key);
 
         MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue("inputtestttt");
