@@ -16,6 +16,7 @@ package ass1;
 // snippet-start:[s3.java2.s3_object_operations.complete]
 // snippet-start:[s3.java2.s3_object_operations.import]
 
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
@@ -37,10 +38,15 @@ public class S3ObjectOperations {
 
     public S3ObjectOperations() {
         Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
         s3 = S3Client.builder().region(region).build();
     }
 
     public static String[] PutObjects(String[] files, String bucketName) throws IOException {
+        Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        s3 = S3Client.builder().region(region).build();
+
         String keys[] = new String[files.length];
         for (int i = 0; i < files.length; ++i) {
             keys[i] = PutObject(files[i], bucketName);
@@ -52,6 +58,7 @@ public class S3ObjectOperations {
 
     public static String PutObject(String filePath, String bucket) throws IOException {
         Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
         s3 = S3Client.builder().region(region).build();
 
         String fileName = filePath; //"C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\input files\\input5.txt";
@@ -68,21 +75,28 @@ public class S3ObjectOperations {
     // Get Object
     public static void getObject(String bucket, String key, String output) throws IOException {
         Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
         s3 = S3Client.builder().region(region).build();
+
         s3.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build(),
                 ResponseTransformer.toFile(Paths.get(output)));
     }
 
     public static boolean isObjectExistsOnS3(String bucket, String key) throws IOException {
         Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
         s3 = S3Client.builder().region(region).build();
+
+
         ListObjectsRequest request = ListObjectsRequest.builder().bucket(bucket).prefix(key).build();
         return !s3.listObjects(request).contents().isEmpty();
     }
 
     public static String CreateBucket(String bucket) {
         Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
         s3 = S3Client.builder().region(region).build();
+
         bucket = bucket + System.currentTimeMillis();
         s3.createBucket(CreateBucketRequest
                 .builder()
@@ -97,6 +111,10 @@ public class S3ObjectOperations {
     }
 
     public static String getBucket(String bucket) {
+        Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        s3 = S3Client.builder().region(region).build();
+
         List<Bucket> buckets = s3.listBuckets().buckets();
         for (Bucket b : buckets) {
             if (b.name().equals(bucket))
@@ -106,12 +124,19 @@ public class S3ObjectOperations {
     }
 
     private static void deleteBucket(String bucket) {
+        Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        s3 = S3Client.builder().region(region).build();
+
         DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucket).build();
         s3.deleteBucket(deleteBucketRequest);
     }
 
 
     private static void multipartUpload(String bucketName, String key) throws IOException {
+        Region region = Region.US_EAST_1;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        s3 = S3Client.builder().region(region).build();
 
         int mb = 1024 * 1024;
         // First create a multipart upload and get upload id 

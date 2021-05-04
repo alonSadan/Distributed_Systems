@@ -21,12 +21,17 @@ public class CloudLocal {
     private AtomicBoolean done;
     private Map<String, Review> reviews;
 
+    private File output;
+
     public CloudLocal(String ID) {
         id = ID;
         numOfAnswers = 0;
-        numOfMessages = 0;
+        numOfMessages = -1; //start with negative number to be sure not equal to numOfMessages.
         done = new AtomicBoolean(false);
         reviews = new HashMap<String, Review>();
+
+        String outputName = "debug_cloud_local1";
+        output = createOutputFileToCWD(outputName);
     }
 
     public String getId() {
@@ -36,17 +41,27 @@ public class CloudLocal {
     public synchronized boolean updateValuesAndCheckDone(Message message) {
         updateReviews(message);
         numOfAnswers++;
-        return done.getAndSet(numOfAnswers == numOfMessages);
+
+        try {
+            FileUtils.writeStringToFile(output, "numOfAnswers: " + numOfAnswers + "; numOfMessages: " + numOfMessages, "UTF-8");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return numOfAnswers == numOfMessages;
     }
 
     public boolean isDone() {
         return done.get();
     }
 
-    public synchronized void incNumOfMessages(int numOfMessages) {
-        this.numOfMessages += numOfMessages;
+    public synchronized void setNumOfMessages(int numOfMessages) {
+        this.numOfMessages = numOfMessages;
     }
 
+
+    public void setDone(boolean done) {
+        this.done.set(true);
+    }
 
     public void updateReviews(Message message) {
         String reviewID = SendReceiveMessages.extractAttribute(message, "reviewID");

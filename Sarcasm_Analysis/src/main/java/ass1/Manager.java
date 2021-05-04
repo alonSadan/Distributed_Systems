@@ -4,8 +4,11 @@ package ass1;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
+import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.io.IOException;
@@ -21,7 +24,11 @@ public class Manager {
         // first parse the jason, then send the reviews
         ReentrantLock lock = new ReentrantLock(); // synchronize createWorkers() to prevent too many workers
         final int MAX_T = 18;
+//        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+//        Ec2Client ec2 = Ec2Client.builder().credentialsProvider(provider).region(Region.US_EAST_1).build();
+
         Ec2Client ec2 = Ec2Client.create();
+
         String localQueueURL = SendReceiveMessages.getQueueURLByName("localsendqueue");
         ExecutorService pool = Executors.newFixedThreadPool(MAX_T);
         Map<String, CloudLocal> locals = new HashMap<String, CloudLocal>();

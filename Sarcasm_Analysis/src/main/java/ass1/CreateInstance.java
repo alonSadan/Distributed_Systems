@@ -24,6 +24,8 @@ package ass1;
 
 // snippet-start:[ec2.java2.create_instance.import]
 
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 
@@ -35,6 +37,8 @@ import java.util.Base64;
  * Creates an EC2 instance
  */
 public class CreateInstance {
+
+
     public static void main(String[] args) {
         final String USAGE =
                 "To run this example, supply an instance name and AMI image id\n" +
@@ -57,11 +61,12 @@ public class CreateInstance {
             job = args[3];
 
         // snippet-start:[ec2.java2.create_instance.main]
-        Ec2Client ec2 = Ec2Client.create();
+        //InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        Ec2Client ec2 = Ec2Client.builder().region(Region.US_EAST_1).build();
         RunInstancesRequest runRequest = RunInstancesRequest.builder()
-                .instanceType(InstanceType.T2_MICRO)
+                .instanceType(InstanceType.T2_LARGE)
                 .imageId(amiId)
-                .iamInstanceProfile(IamInstanceProfileSpecification.builder().arn("arn:aws:iam::332668175771:instance-profile/Ass1FullAccess").build())
+                .iamInstanceProfile(IamInstanceProfileSpecification.builder().arn("arn:aws:iam::855350177051:instance-profile/ass1full").build())
                 .maxCount(1)
                 .minCount(1)
                 .userData(Base64.getEncoder().encodeToString(script.getBytes()))

@@ -3,6 +3,7 @@ package ass1;
 import java.util.HashMap;
 import java.util.Map;
 
+import software.amazon.awssdk.services.sqs.model.ChangeMessageVisibilityRequest;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
@@ -14,18 +15,34 @@ public class Worker {
     public static NamedEntityRecognitionHandler namedEntityRecognitionHandler = new NamedEntityRecognitionHandler();
 
     public static void main(String[] args) {
+        final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
 
         while (true) {
-            String jobQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
-            String answersQueueURL = SendReceiveMessages.getQueueURLByName("answers");
+            String jobQueueURL = "";
+            String answersQueueURL = "";
+            try {
+                jobQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
+                answersQueueURL = SendReceiveMessages.getQueueURLByName("answers");
+            }catch (Exception e){
+                e.printStackTrace();
+                continue;
+            }
+            Message jobMessage = null;
+            try {
+                jobMessage = SendReceiveMessages.receive(jobQueueURL, "job", "reviewID", "localID");
+                if(jobMessage != null) {
+                    SendReceiveMessages.changeQueueVisibilityTimeout(jobQueueURL, 60, jobMessage.receiptHandle());
+                }
 
-            Message jobMessage = SendReceiveMessages.receive(jobQueueURL, "job", "reviewID", "localID");
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
 
             if (jobMessage == null) {
                 continue;
             }
 
-            final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
 
             String revID = SendReceiveMessages.extractAttribute(jobMessage, "reviewID");
             MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(revID);
@@ -42,24 +59,34 @@ public class Worker {
             if (job.equals("NER")) {
 
                 String ner = namedEntityRecognitionHandler.getEntities(jobMessage.body());
-                if (ner.equals("")){
-                    ner= " ";
+                if (ner.equals("")) {
+                    ner = " ";
                 }
 
-                SendReceiveMessages.send(answersQueueURL,
-                        ner,
-                        messageAttributes);
+                try {
+                    SendReceiveMessages.send(answersQueueURL,
+                            ner,
+                            messageAttributes);
 
-                SendReceiveMessages.deleteMessage(jobQueueURL, jobMessage);
+                    SendReceiveMessages.deleteMessage(jobQueueURL, jobMessage);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
+                }
             }
 
-            if (job.equals("sentiment")) {
+            else if (job.equals("sentiment")) {
                 int sentiment = sentimentAnalysisHandler.findSentiment(jobMessage.body());
-                SendReceiveMessages.send(answersQueueURL,
-                        String.valueOf(sentiment),
-                        messageAttributes);
+                try {
+                    SendReceiveMessages.send(answersQueueURL,
+                            String.valueOf(sentiment),
+                            messageAttributes);
 
-                SendReceiveMessages.deleteMessage(jobQueueURL, jobMessage);
+                    SendReceiveMessages.deleteMessage(jobQueueURL, jobMessage);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
+                }
             }
         }
     }

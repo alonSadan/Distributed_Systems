@@ -2,6 +2,7 @@ package ass1;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -13,29 +14,33 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
 
 public class DistributeTask implements Runnable {
 
-    private int numOfReviews;
     private Message message;
+    //        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
     private Ec2Client ec2;
     private int n;
     private int numOfWorkers;
     private CloudLocal local;
     private final ReentrantLock lock;
+    final Map<String, MessageAttributeValue> messageAttributes;
+
 
     public DistributeTask(Message msg, CloudLocal local, ReentrantLock lock) {
 
-        numOfReviews = 0;
         message = msg;
         // local ids is a list of size 1
-        ec2 = Ec2Client.create();
+        ec2 = Ec2Client.builder().region(Region.US_EAST_1).build();;
         n = 0;
         numOfWorkers = 0;
         this.local = local;
         this.lock = lock;
+        messageAttributes = new HashMap();
     }
     // 1)make father receive multiple messages (2) split manager task into recive and distribute
     // (3) mkae threads work on all local aplictaions togther (4) keep local applcaiton in data structure
@@ -44,39 +49,49 @@ public class DistributeTask implements Runnable {
     @Override
     public void run() {
         try {
+            String workersQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
+            ExecutorService pool = Executors.newFixedThreadPool(6);
+
             n = Integer.parseInt(SendReceiveMessages.extractAttribute(message, "n"));
             // download the file
-            List<Pair<String, String>> locations = parseLocalMessageLocations(message);
-            for (Pair<String, String> location : locations) {   //PAir<bucket, key>
+            List<Pair<String, String>> Inputlocations = parseLocalMessageLocations(message);
+            for (Pair<String, String> location : Inputlocations) {
+
                 String filename = "input" + new Date().getTime();
                 String inputPath = System.getProperty("user.dir") + File.separator + filename;
                 S3ObjectOperations.getObject(location.getKey(), location.getValue(), inputPath);
                 // parse the message to get the reviews
                 JsonParser parser = new JsonParser(inputPath);
-                String workersQueueURL = SendReceiveMessages.getQueueURLByName("jobs");
-                List<Review> reviews;
+                List<Review> reviews = new ArrayList<>();
 
                 while (parser.hasNextInput()) {
                     reviews = parser.getNextReviews();
-                    local.setReviewsFromList(reviews);
-                    numOfReviews += reviews.size();
-
-                    // create m-k workers
-                    createWorkers();
-
-                    for (Review review : reviews) {
-                        // send each message twice, once for ner and once for sentiment
-                        distributeJobsToWorkers(review, workersQueueURL);
-                        local.incNumOfMessages(2);
+                    if (reviews.size() > 0) {
+                        local.setReviewsFromList(reviews);
+                        // create m-k workers
+                        createWorkers();
                     }
                 }
-                Path path = Paths.get(inputPath);
-                try {
-                    Files.deleteIfExists(path);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+
+//                Path path = Paths.get(inputPath);
+//                try {
+//                    Files.deleteIfExists(path);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
+
+            int i = 0;
+
+            for (Review review : local.getReviews().values()) {
+                // send each message twice, once for ner and once for sentiment
+                pool.execute(() -> distributeJobsToWorkers(review,workersQueueURL));
+                i++;
+            }
+
+            System.out.println("distribute:  end of for-loop");
+            local.setNumOfMessages(local.getReviews().size() * 2);
+            pool.shutdown();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -99,7 +114,6 @@ public class DistributeTask implements Runnable {
     }
 
     public void distributeJobsToWorkers(Review review, String workersQueueURL) {
-        final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
         MessageAttributeValue reviewID = SendReceiveMessages.createStringAttributeValue(review.getId());
         messageAttributes.put("reviewID", reviewID);
 
@@ -121,7 +135,7 @@ public class DistributeTask implements Runnable {
         lock.lock();
         // we count the workers every input file, so failed initialized workers will be created again soon
         int k = countInstances(ec2, "worker");
-        numOfWorkers = numOfReviews / n + 1 - k; // the +1 is for integer division
+        numOfWorkers = local.getReviews().size() / n + 1 - k; // the +1 is for integer division
         for (int i = 0; i < numOfWorkers; i++) {
             String script = "#! /bin/bash\n" +
                     "java -jar /home/ec2-user/worker-1.0-jar-with-dependencies.jar\n";

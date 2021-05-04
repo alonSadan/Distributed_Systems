@@ -9,15 +9,17 @@ import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
-
+import org.apache.commons.lang3.time.StopWatch;
 import static java.lang.Thread.sleep;
 
 
 public class Local { //args[] == paths to input files
 
     private static String ID = String.valueOf(new Date().getTime());
+    private static StopWatch stopWatch = new StopWatch();
 
     public static void main(String[] args) throws IOException {
+        stopWatch.start();
         if (args.length < 1) {
             System.out.println("no input files");
             System.exit(1);
@@ -35,9 +37,9 @@ public class Local { //args[] == paths to input files
         }
 
         Ec2Client ec2 = Ec2Client.create();
-        if (!managerExists(ec2)) {
-            CreateManager("manager");
-        }
+//        if (!managerExists(ec2)) {
+//            CreateManager("manager");
+//        }
 
         SendInputsLocationsToManager(inputs, n);
         Message doneMessage = waitForDoneMessage();
@@ -46,6 +48,8 @@ public class Local { //args[] == paths to input files
             System.out.println("terminating manager");
             terminateManager();
         }
+        stopWatch.stop();
+        System.out.println("runtime: " + stopWatch.getTime() + " milliseconds");
     }
 
     public static void terminateManager() {
@@ -108,7 +112,7 @@ public class Local { //args[] == paths to input files
     private static void CreateManager(String managerName) {
         String script = "#! /bin/bash\n" +
                 "java -jar /home/ec2-user/manager-1.0-jar-with-dependencies.jar\n";
-        String[] args = {managerName, "ami-05867677029203c0e", script, "manager"};
+        String[] args = {managerName, "ami-0b9a720251e51c0fa", script, "manager"};
         CreateInstance.main(args);
     }
 
