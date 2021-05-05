@@ -112,8 +112,7 @@ public class Local { //args[] == paths to input files
     private static void CreateManager(String managerName) {
         String script = "#! /bin/bash\n" +
                 "java -jar /home/ec2-user/manager-1.0-jar-with-dependencies.jar\n";
-        String[] args = {managerName, "\t\n" +
-                "ami-012d10a669446fd91", script, "manager"};
+        String[] args = {managerName, "ami-012d10a669446fd91", script, "manager"};
         CreateInstance.main(args);
     }
 
