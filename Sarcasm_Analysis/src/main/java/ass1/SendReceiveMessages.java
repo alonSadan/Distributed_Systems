@@ -10,8 +10,6 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 
-// snippet-end:[sqs.java2.send_recieve_messages.import]
-// snippet-start:[sqs.java2.send_recieve_messages.main]
 public class SendReceiveMessages {
 
     public static void send(String queueUrl, String messageBody, Map<String, MessageAttributeValue> attributes) {
@@ -153,4 +151,4 @@ public class SendReceiveMessages {
                 .build();
         sqs.deleteMessage(deleteRequest);
     }
-} //end of class
+}

@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package ass1;
-// snippet-start:[s3.java2.s3_object_operations.complete]
-// snippet-start:[s3.java2.s3_object_operations.import]
 
 import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -22,17 +20,6 @@ import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
-
-//import com.amazonaws.AmazonServiceException;
-//import com.amazonaws.SdkClientException;
-//import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-//import com.amazonaws.regions.Regions;
-//import com.amazonaws.services.s3.AmazonS3;
-//import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-//import com.amazonaws.services.s3.transfer.TransferManager;
-//import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-//import com.amazonaws.services.s3.transfer.Upload;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +51,6 @@ public class S3ObjectOperations {
         return keys;
     }
 
-
     public static String PutObject(String filePath, String bucket) throws IOException {
         InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
         s3 = S3Client.builder()
@@ -72,10 +58,9 @@ public class S3ObjectOperations {
                 .credentialsProvider(provider)
                 .build();
 
-        String fileName = filePath; //"C:\\Users\\yotam\\Desktop\\aws_alon\\Distributed_Systems\\Sarcasm_Analysis\\input files\\B000EVOSE4.txt";
+        String fileName = filePath;
         String key = String.valueOf(new Date().getTime());
 
-        // Put Object
         s3.putObject(PutObjectRequest.builder().bucket(bucket).key(key)
                         .build(),
                 RequestBody.fromFile(new File(fileName)));
@@ -83,7 +68,6 @@ public class S3ObjectOperations {
         return key;
     }
 
-    // Get Object
     public static void getObject(String bucket, String key, String output) throws IOException {
         InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
         s3 = S3Client.builder()
@@ -178,9 +162,6 @@ public class S3ObjectOperations {
         String etag2 = s3.uploadPart(uploadPartRequest2, RequestBody.fromByteBuffer(getRandomByteBuffer(3 * mb))).eTag();
         CompletedPart part2 = CompletedPart.builder().partNumber(2).eTag(etag2).build();
 
-
-        // Finally call completeMultipartUpload operation to tell S3 to merge all uploaded
-        // parts and finish the multipart operation.
         CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder().parts(part1, part2).build();
         CompleteMultipartUploadRequest completeMultipartUploadRequest =
                 CompleteMultipartUploadRequest.builder().bucket(bucketName).key(key).uploadId(uploadId)
