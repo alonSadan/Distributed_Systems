@@ -1,36 +1,20 @@
 package ass1;
 
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.*;
 
 import java.util.*;
 
-// snippet-end:[sqs.java2.send_recieve_messages.import]
-// snippet-start:[sqs.java2.send_recieve_messages.main]
 public class SendReceiveMessages {
-    //    private static final String QUEUE_NAME = "testQueue" + new Date().getTime()
-
-    ////// inputtestttt
-    public static void main(String[] args) {
-        String localQueueURL = getQueueURLByName("localsendqueue");
-        Map<String, MessageAttributeValue> attributes = new HashMap();
-        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
-        MessageAttributeValue n = SendReceiveMessages.createStringAttributeValue("100");
-        attributes.put("n", n);
-
-        MessageAttributeValue key = SendReceiveMessages.createStringAttributeValue("input1.txt");
-        attributes.put("key", key);
-
-        MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue("inputtestttt");
-        attributes.put("bucket", bucket);
-        send(localQueueURL, "blah", attributes);
-
-    }
-    
 
     public static void send(String queueUrl, String messageBody, Map<String, MessageAttributeValue> attributes) {
-        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
+        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1)
+                .credentialsProvider(provider)
+                .build();
+
         SendMessageRequest send_msg_request = SendMessageRequest.builder()
                 .queueUrl(queueUrl)
                 .messageBody(messageBody)
@@ -38,18 +22,35 @@ public class SendReceiveMessages {
                 .build();
         sqs.sendMessage(send_msg_request);
     }
-    
+
+    public static void changeQueueVisibilityTimeout(String queueURL, int timeout, String recipt) {
+        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1)
+                .credentialsProvider(provider)
+                .build();
+
+        ChangeMessageVisibilityRequest req = ChangeMessageVisibilityRequest.builder()
+                .queueUrl(queueURL)
+                .visibilityTimeout(timeout)
+                .receiptHandle(recipt)
+                .build();
+        sqs.changeMessageVisibility(req);
+    }
+
     public static List<Message> receiveMany(String queueUrl, int maxNumberOfMessages, String... attributeNames) { //returns one message by default
-        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
+        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        SqsClient sqs = SqsClient.builder()
+                .region(Region.US_EAST_1)
+                .credentialsProvider(provider)
+                .build();
+
         ReceiveMessageRequest receiveRequest = ReceiveMessageRequest.builder()
                 .messageAttributeNames(attributeNames)
                 .maxNumberOfMessages(maxNumberOfMessages)
                 .queueUrl(queueUrl)
                 .build();
         List<Message> allmessages = sqs.receiveMessage(receiveRequest).messages();
-        List<Message> filteredMessages = filterMessagesByAttributes(allmessages, attributeNames);
-
-        return filteredMessages;
+        return filterMessagesByAttributes(allmessages, attributeNames);
     }
 
     public static Message receive(String queueUrl, String... attributeNames) { //returns one message by default
@@ -79,7 +80,11 @@ public class SendReceiveMessages {
     }
 
     public static String createSQS(String name) {
-        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
+        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        SqsClient sqs = SqsClient.builder()
+                .region(Region.US_EAST_1)
+                .credentialsProvider(provider)
+                .build();
 
         CreateQueueRequest request = CreateQueueRequest.builder()
                 .queueName(name)
@@ -89,7 +94,12 @@ public class SendReceiveMessages {
     }
 
     public static String getQueueURLByName(String name) {
-        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
+        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        SqsClient sqs = SqsClient.builder()
+                .region(Region.US_EAST_1)
+                .credentialsProvider(provider)
+                .build();
+
         try {
             GetQueueUrlRequest getQueueRequest = GetQueueUrlRequest.builder()
                     .queueName(name)
@@ -99,7 +109,6 @@ public class SendReceiveMessages {
             return createSQS(name);
         }
     }
-
 
     public static String extractAttribute(Message message, String attributeName) {
         if (!message.messageAttributes().isEmpty()) {
@@ -113,7 +122,6 @@ public class SendReceiveMessages {
         return null;
     }
 
-
     public static MessageAttributeValue createStringAttributeValue(String value) {
         return MessageAttributeValue
                 .builder()
@@ -123,21 +131,16 @@ public class SendReceiveMessages {
     }
 
     public static void deleteMessage(String queueURL, Message message) {
-        SqsClient sqs = SqsClient.builder().region(Region.US_EAST_1).build();
+        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        SqsClient sqs = SqsClient.builder()
+                .region(Region.US_EAST_1)
+                .credentialsProvider(provider)
+                .build();
+
         DeleteMessageRequest deleteRequest = DeleteMessageRequest.builder()
                 .queueUrl(queueURL)
                 .receiptHandle(message.receiptHandle())
                 .build();
         sqs.deleteMessage(deleteRequest);
     }
-
-    // delete messages from the queue
-//        for (Message m : messages) {
-//            System.out.println(m.body());
-//           DeleteMessageRequest deleteRequest = DeleteMessageRequest.builder()
-//                 .queueUrl(queueUrl)
-//                 .receiptHandle(m.receiptHandle())
-//                 .build();
-//            sqs.deleteMessage(deleteRequest);
-//        }
-} //end of class
+}

@@ -4,9 +4,11 @@ package ass1;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.*;
 import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.regions.Region;
 
 import java.io.IOException;
 import java.util.*;
@@ -18,10 +20,11 @@ import static java.lang.Thread.sleep;
 
 public class Manager {
     public static void main(String[] args) throws IOException, InterruptedException {
-        // first parse the jason, then send the reviews
         ReentrantLock lock = new ReentrantLock(); // synchronize createWorkers() to prevent too many workers
         final int MAX_T = 18;
-        Ec2Client ec2 = Ec2Client.create();
+        InstanceProfileCredentialsProvider provider = InstanceProfileCredentialsProvider.builder().build();
+        Ec2Client ec2 = Ec2Client.builder().credentialsProvider(provider).region(Region.US_EAST_1).build();
+
         String localQueueURL = SendReceiveMessages.getQueueURLByName("localsendqueue");
         ExecutorService pool = Executors.newFixedThreadPool(MAX_T);
         Map<String, CloudLocal> locals = new HashMap<String, CloudLocal>();
@@ -98,11 +101,20 @@ public class Manager {
             }
         }
         pool.shutdown();
-        TerminateInstancesRequest terminateRequest = TerminateInstancesRequest.builder().instanceIds(getIntsancesIDsByJob(ec2, "worker")).build();
+        TerminateInstancesRequest terminateRequest = TerminateInstancesRequest.builder().instanceIds(getInstancesIDsByJob(ec2, "worker")).build();
         ec2.terminateInstances(terminateRequest);
+
+        ClearS3AndSQS.clear();
+
+        try {
+            terminateRequest = TerminateInstancesRequest.builder().instanceIds(getInstancesIDsByJob(ec2, "manager")).build();
+            ec2.terminateInstances(terminateRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static List<String> getIntsancesIDsByJob(Ec2Client ec2, String job) {
+    public static List<String> getInstancesIDsByJob(Ec2Client ec2, String job) {
         Filter jobFilter = Filter.builder()
                 .name("tag:job")
                 .values(job)
@@ -123,7 +135,7 @@ public class Manager {
     }
 
 
-}//Manager
+}
 
 
 

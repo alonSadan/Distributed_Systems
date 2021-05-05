@@ -6,6 +6,7 @@ import static java.lang.Thread.sleep;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,10 +22,12 @@ public class CloudLocal {
     private AtomicBoolean done;
     private Map<String, Review> reviews;
 
+    private File output;
+
     public CloudLocal(String ID) {
         id = ID;
         numOfAnswers = 0;
-        numOfMessages = 0;
+        numOfMessages = -1; //start with negative number to be sure not equal to numOfMessages.
         done = new AtomicBoolean(false);
         reviews = new HashMap<String, Review>();
     }
@@ -36,17 +39,21 @@ public class CloudLocal {
     public synchronized boolean updateValuesAndCheckDone(Message message) {
         updateReviews(message);
         numOfAnswers++;
-        return done.getAndSet(numOfAnswers == numOfMessages);
+        return numOfAnswers == numOfMessages;
     }
 
     public boolean isDone() {
         return done.get();
     }
 
-    public synchronized void incNumOfMessages(int numOfMessages) {
-        this.numOfMessages += numOfMessages;
+    public synchronized void setNumOfMessages(int numOfMessages) {
+        this.numOfMessages = numOfMessages;
     }
 
+
+    public void setDone(boolean done) {
+        this.done.set(true);
+    }
 
     public void updateReviews(Message message) {
         String reviewID = SendReceiveMessages.extractAttribute(message, "reviewID");
@@ -64,7 +71,7 @@ public class CloudLocal {
         }
     }
 
-    public  void generateOutputFile() throws IOException {
+    public void generateOutputFile() throws IOException {
         String outputName = "output-" + id + ".html";
         File output = createOutputFileToCWD(outputName);
         renderHTMLToFile(output);
@@ -72,7 +79,7 @@ public class CloudLocal {
     }
 
 
-    public File createOutputFileToCWD(String outputName){
+    public File createOutputFileToCWD(String outputName) {
         try {
             File output = new File(outputName);
 
@@ -105,19 +112,19 @@ public class CloudLocal {
         final Map<String, MessageAttributeValue> messageAttributes = new HashMap();
 
         MessageAttributeValue KEY = SendReceiveMessages.createStringAttributeValue(key);
-        messageAttributes.put("key",KEY);
+        messageAttributes.put("key", KEY);
         MessageAttributeValue bucket = SendReceiveMessages.createStringAttributeValue(outputBucket);
-        messageAttributes.put("bucket",bucket);
+        messageAttributes.put("bucket", bucket);
         MessageAttributeValue localID = SendReceiveMessages.createStringAttributeValue(getId());
-        messageAttributes.put("localID",localID);
+        messageAttributes.put("localID", localID);
 
-        SendReceiveMessages.send(localRecieveQueueUrl," ",messageAttributes);
+        SendReceiveMessages.send(localRecieveQueueUrl, " ", messageAttributes);
 
         deleteAfterUpload(outputName, outputBucket, key);
     }
 
     public void deleteAfterUpload(String outputPath, String bucket, String key) throws IOException {
-        while(! S3ObjectOperations.isObjectExistsOnS3(bucket, key)){
+        while (!S3ObjectOperations.isObjectExistsOnS3(bucket, key)) {
 
         }
         Path path = Paths.get(outputPath);
@@ -129,17 +136,17 @@ public class CloudLocal {
     }
 
     public void renderHTMLToFile(File file) throws IOException {
-        String[] colors  = {"Darkred","red","black","green","Darkgreen"};
-       // Appendable writer = new FileWriter(fileName,true);
-      String html =   html(
+        String[] colors = {"Darkred", "red", "black", "green", "Darkgreen"};
+        // Appendable writer = new FileWriter(fileName,true);
+        String html = html(
                 head(
                         title("output")
                 ),
                 body(
                         each(reviews.values(), rev -> p(
-                                span("Link: " + rev.getLink()).withStyle("color:"+colors[rev.getSentiment()]),
+                                span("Link: " + rev.getLink()).withStyle("color:" + colors[rev.getSentiment()]),
                                 span("|").withStyle("font-weight:bold;font-size:30px"),
-                                span("Named-Entity: "+rev.getNamedEntityRecognition()),
+                                span("Named-Entity: " + rev.getNamedEntityRecognition()),
                                 span("|").withStyle("font-weight:bold;font-size:30px"),
                                 span("Sarcastic: " + rev.isSarcastic())
                         )))
