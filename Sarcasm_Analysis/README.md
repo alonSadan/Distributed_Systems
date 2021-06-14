@@ -17,10 +17,10 @@ Unzip the file <file name> and run `java -jar local-1.0-jar-with-dependencies.ja
 ## How it works
 
 The app is built of three main parts: _Local_, _Manager_, _Worker_.  
-_Local_ creates the manager(if it doesn't already exists) and send it the input files,
+_Local_ creates the _manager_(if it doesn't already exists) and send it the input files,
 for processing.  
 The Manager gets the inputs, creates processing tasks and delegates them to the workers.  
-The workers are created by the manager according to the input number `n` and the number of messages the manager receives from _Local_.  
+The workers are created by the manager according to the input number `n`. For every n input tasks a  worker is created.
 _Manager_ then gathers all the answers from the workers and creates a html summery file,  
 which _Local_ will download.  
 In the following part there will be a detailed explanation on each part of the application:
