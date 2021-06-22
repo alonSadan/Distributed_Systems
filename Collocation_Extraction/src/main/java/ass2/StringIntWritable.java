@@ -8,49 +8,51 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class StringIntWritable implements WritableComparable {
-    private int decade;
-    private String twogram;
+    private String str;
+    private int number;
 
     public void write(DataOutput out) throws IOException {
-        out.writeInt(decade);
-        out.writeBytes(twogram);
+        out.writeUTF(str);
+        out.writeInt(number);
     }
 
     public StringIntWritable(){}
 
-    public StringIntWritable(String twogram, int decade){
+    public StringIntWritable(String str, int number){
         // convert to utf-8
-        byte[] bytes = twogram.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
         String utf8EncodedString = new String(bytes, StandardCharsets.UTF_8);
-        twogram = utf8EncodedString;
-        this.twogram = twogram;
-        this.decade = decade;
+        str = utf8EncodedString;
+        this.str = str;
+        this.number = number;
     }
 
     public void readFields(DataInput in) throws IOException {
-        decade = in.readInt();
-        twogram = in.readLine();
+        str = in.readUTF();
+        number = in.readInt();
         // convert to utf-8
-        byte[] bytes = twogram.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
         String utf8EncodedString = new String(bytes, StandardCharsets.UTF_8);
-        twogram = utf8EncodedString;
+        str = utf8EncodedString;
     }
 
-    public int getDecade() {
-        return decade;
+    public int getNumber() {
+        return number;
     }
 
-    public String getTwogram() {
-        return twogram;
+    public String getStr() {
+        return str;
     }
 
-    public void setDecade(int decade) {
-        this.decade = decade;
+
+    public void setNumber(int number) {
+        this.number = number;
     }
 
-    public void setTwogram(String twogram) {
-        this.twogram = twogram;
+    public void setStr(String str) {
+        this.str = str;
     }
+
 
     public static StringIntWritable read(DataInput in) throws IOException {
         StringIntWritable si = new StringIntWritable();
@@ -60,14 +62,14 @@ public class StringIntWritable implements WritableComparable {
 
     @Override
     public int compareTo(Object o) {
-        int compare = ((StringIntWritable)o).getDecade() - this.getDecade();
-        if ( compare == 0){
-            return ((StringIntWritable)o).getTwogram().compareTo(this.getTwogram());
-        }
+        int compare = ((StringIntWritable)o).getNumber() - this.getNumber();
+//        if ( compare == 0){
+//            return ((StringIntWritable)o).getStr().compareTo(this.getStr());
+//        }
         return compare;
     }
 
     public String toString(){
-        return twogram + "\t" + decade;
+        return str + "\t" + number;
     }
 }

@@ -6,25 +6,29 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class SumDecadeWritable implements Writable {
+public class TwogramSumDecadeWritable implements Writable {
     private int sum;
     private int decade;
+    private String twogram;
 
     public void write(DataOutput out) throws IOException {
         out.writeInt(sum);
         out.writeInt(decade);
+        out.writeBytes(twogram);
     }
 
-    public SumDecadeWritable(){}
+    public TwogramSumDecadeWritable(){}
 
-    public SumDecadeWritable(int sum, int decade, int c1){
+    public TwogramSumDecadeWritable(int sum, int decade, String twogram){
         this.sum = sum;
         this.decade = decade;
+        this.twogram = twogram;
     }
 
     public void readFields(DataInput in) throws IOException {
         sum = in.readInt();
         decade = in.readInt();
+        twogram = in.readLine();
     }
 
     public int getSum() {
@@ -43,14 +47,17 @@ public class SumDecadeWritable implements Writable {
         this.sum = sum;
     }
 
-    public static SumDecadeWritable read(DataInput in) throws IOException {
-        SumDecadeWritable o = new SumDecadeWritable();
+    public static TwogramSumDecadeWritable read(DataInput in) throws IOException {
+        TwogramSumDecadeWritable o = new TwogramSumDecadeWritable();
         o.readFields(in);
         return o;
     }
 
     public String toString(){
-        return sum + "\t" + decade;
+        return twogram + "\t" + sum + "\t" + decade;
     }
 
+    public void setTwogram(String twogram) {
+        this.twogram = twogram;
+    }
 }
