@@ -1,3 +1,17 @@
 ../Sarcasm_Analysis/manager.iml
 target/
 .idea/*
+NPMI/
+NPerDecade.txt
+adlerOutput/
+c1/
+c2/
+eng-all-2gram-fg
+outAdler2heball/
+outAdler5/
+outAdler5heball/
+outN/
+src/main/java/ass2/CountNPerDecade.java
+twogramPerDecade
+.idea/jarRepositories.xml
+

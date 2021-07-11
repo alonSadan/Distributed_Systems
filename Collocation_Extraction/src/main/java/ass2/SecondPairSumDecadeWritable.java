@@ -6,29 +6,29 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class TwogramSumDecadeWritable implements Writable {
+public class SecondPairSumDecadeWritable implements Writable {
     private int sum;
     private int decade;
-    private String twogram;
+    private String secondPair;
 
     public void write(DataOutput out) throws IOException {
         out.writeInt(sum);
         out.writeInt(decade);
-        out.writeBytes(twogram);
+        out.writeBytes(secondPair);
     }
 
-    public TwogramSumDecadeWritable(){}
+    public SecondPairSumDecadeWritable(){}
 
-    public TwogramSumDecadeWritable(int sum, int decade, String twogram){
+    public SecondPairSumDecadeWritable(int sum, int decade, String secondPair){
         this.sum = sum;
         this.decade = decade;
-        this.twogram = twogram;
+        this.secondPair = secondPair;
     }
 
     public void readFields(DataInput in) throws IOException {
         sum = in.readInt();
         decade = in.readInt();
-        twogram = in.readLine();
+        secondPair = in.readLine();
     }
 
     public int getSum() {
@@ -47,17 +47,17 @@ public class TwogramSumDecadeWritable implements Writable {
         this.sum = sum;
     }
 
-    public static TwogramSumDecadeWritable read(DataInput in) throws IOException {
-        TwogramSumDecadeWritable o = new TwogramSumDecadeWritable();
+    public static SecondPairSumDecadeWritable read(DataInput in) throws IOException {
+        SecondPairSumDecadeWritable o = new SecondPairSumDecadeWritable();
         o.readFields(in);
         return o;
     }
 
     public String toString(){
-        return twogram + "\t" + sum + "\t" + decade;
+        return secondPair + "\t" + sum + "\t" + decade;
     }
 
-    public void setTwogram(String twogram) {
-        this.twogram = twogram;
+    public void setSecondPair(String secondPair) {
+        this.secondPair = secondPair;
     }
 }

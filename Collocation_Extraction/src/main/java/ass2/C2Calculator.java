@@ -1,5 +1,6 @@
 package ass2;
 
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -12,88 +13,63 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.StringTokenizer;
 
-public class C1Calculator {
-    /*
-     alon yotam 2002 2 //flag
-     alon yotam 2002 2
-     alon yotam 2003 3 //flag
-     alon yotam 2003 3
-     alon yotam 2004 4 //flag
-     alon yotam 2004 4
-     alon moshe 2004 5 //flag
-     alon, moshe 2004 5
-
-after shuffle & sort:
-    alon yotam 2000 2 flag
-    alon yotam 2000 3 flag
-    alon yotam 2000 4 flag
-    alon, moshe 2000 5 flag
-    alon yotam 2002 4
-    alon yotam 2002 4
-    alon, moshe 2003 5
-    alon, moshe 2004 5
-
-    reducer:
-    flag? sum += count
-    not flag? write with for each
-*/
-
-    public static class MapperClass extends Mapper<LongWritable, Text, Decade2GramC1C2, StringIntWritable> {
+public class C2Calculator {
+    public static class MapperClass extends Mapper<LongWritable, Text, Decade2GramC1C2, StringIntIntWritable> {
         private Decade2GramC1C2 shlomo = new Decade2GramC1C2(3,"shlomo",0,0,0);
-        private StringIntWritable si = new StringIntWritable("si",2);
+        private StringIntIntWritable sii = new StringIntIntWritable("si",2,3);
 
-
-//        @Override
+        //        @Override
         public void map(LongWritable key, Text value, Context context) throws IOException,  InterruptedException {
             StringTokenizer itr = new StringTokenizer(value.toString());
             String w1 = null;
             String w2 = null;
             int count = 0;
             int decade = 0;
+            int c1 = 0;
+            int c2 = 0;
             if(itr.countTokens() > 3){
+                decade = Integer.parseInt(itr.nextToken());
                 w1 = itr.nextToken();
                 w2 = itr.nextToken();
-                String strYear = itr.nextToken();
-                decade = (Integer.parseInt(strYear.substring(0,3) + "0"));
+                c1 = Integer.parseInt(itr.nextToken());
+                c2 = Integer.parseInt(itr.nextToken());
                 count = Integer.parseInt(itr.nextToken());
             }
             if (w1 == null || w2 == null){ // just to check
                 return;
             }
-            si.setStr(w2);
-            si.setNumber(count);
+            sii.setStr(w1);      // this is the main point of C2Calculator
+            sii.setNumber1(c1);
+            sii.setNumber2(count);
             shlomo.setDecade(decade);
-            shlomo.setWord(w1);
+            shlomo.setWord(w2); // this is the main point of C2Calculator
             shlomo.setFlag(0);
-            context.write(shlomo, si);
-            shlomo.setFlag(1); // set flag
-            context.write(shlomo, si);
+            context.write(shlomo, sii);
+            shlomo.setFlag(1);
+            context.write(shlomo, sii);
         }
     }
 
-    public static class ReducerClass extends Reducer<Decade2GramC1C2, StringIntWritable, Decade2GramC1C2, IntWritable> {
-        private IntWritable num = new IntWritable(0);
+
+    public static class ReducerClass extends Reducer<Decade2GramC1C2, StringIntIntWritable, Decade2GramC1C2, IntWritable> {
+        private IntWritable count = new IntWritable(0);
         private int sum = 0;
-//        @Override
-        public void reduce(Decade2GramC1C2 key, Iterable<StringIntWritable> values, Context context) throws IOException,  InterruptedException {
+        //        @Override
+        public void reduce(Decade2GramC1C2 key, Iterable<StringIntIntWritable> values, Context context) throws IOException,  InterruptedException {
             int decade = key.getDecade();
-            int flag = key.getFlag();
-            String word1 = key.getTwogram();
-            if (flag == 1){ // flag
-                for (StringIntWritable value : values) {
-                    sum += value.getNumber();
+            String word2 = key.getTwogram();
+            if(key.getFlag() == 1) {
+                for (StringIntIntWritable value : values) {
+                    sum += value.getNumber2();
                 }
             }
-            else{
-                for (StringIntWritable value : values){
-                    num.set(value.getNumber());
-                    context.write(new  Decade2GramC1C2(decade,word1 + " " + value.getStr(),
-                            sum,0,0), num);
+            else {
+                for (StringIntIntWritable value : values){
+                    count.set(value.getNumber2());
+                    context.write(new  Decade2GramC1C2(decade,value.getStr() + " " + word2,
+                            value.getNumber1(),sum,0), count);
                 }
                 sum = 0; // initilize sum again
             }
@@ -109,14 +85,14 @@ after shuffle & sort:
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "c1_calculator");
-        job.setJarByClass(C1Calculator.class);
-        job.setMapperClass(MapperClass.class);
+        Job job = Job.getInstance(conf, "c2_calculator");
+        job.setJarByClass(C2Calculator.class);
+        job.setMapperClass(C2Calculator.MapperClass.class);
 //    job.setPartitionerClass(PartitionerClass.class);
 //    job.setCombinerClass(ReducerClass.class);
-        job.setReducerClass(ReducerClass.class);
+        job.setReducerClass(C2Calculator.ReducerClass.class);
         job.setMapOutputKeyClass(Decade2GramC1C2.class);
-        job.setMapOutputValueClass(StringIntWritable.class);
+        job.setMapOutputValueClass(StringIntIntWritable.class);
         job.setOutputKeyClass(Decade2GramC1C2.class);
         job.setOutputValueClass(IntWritable.class);
 //    job.setNumReduceTasks(20);
@@ -125,8 +101,4 @@ after shuffle & sort:
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
-
 }
-
-
-

@@ -11,14 +11,28 @@ public class Decade2GramC1C2 implements WritableComparable {
     private String twogram;
     private int c1;
     private int c2;
+    int flag;
 
     public Decade2GramC1C2() {}
 
-    public Decade2GramC1C2(int decade, String twogram, int c1, int c2) {
+    public Decade2GramC1C2(int decade, String twogram, int c1, int c2, int flag) {
         this.decade = decade;
         this.twogram = twogram;
         this.c1 = c1;
         this.c2 = c2;
+        this.flag = flag;
+    }
+
+    public Decade2GramC1C2 getCopy(){
+        return new Decade2GramC1C2(decade, twogram, c1, c2, flag);
+    }
+
+    public int getFlag() {
+        return flag;
+    }
+
+    public void setFlag(int flag) {
+        this.flag = flag;
     }
 
     public int getDecade() {
@@ -55,18 +69,24 @@ public class Decade2GramC1C2 implements WritableComparable {
 
     @Override
     public int compareTo(Object o) {
-        int compare = ((Decade2GramC1C2)o).getDecade() - this.getDecade();
-        if ( compare == 0){
+        int decadeCompare = ((Decade2GramC1C2)o).getDecade() - this.getDecade();
+        if ( decadeCompare == 0){
             if ( this.getTwogram().equals("*N*") ){
-                return 1;
-            }
-            if ( ((Decade2GramC1C2)o).getTwogram().equals("*N*") ){
                 return -1;
             }
-
-            return ((Decade2GramC1C2)o).getTwogram().compareTo(this.getTwogram());
+            if ( ((Decade2GramC1C2)o).getTwogram().equals("*N*") ){
+                return 1;
+            }
+            int twogramCompare = ((Decade2GramC1C2)o).getTwogram().compareTo(this.getTwogram());
+            int flagCompare = ((Decade2GramC1C2)o).getFlag() - this.getFlag();
+            if (twogramCompare == 0){
+                return flagCompare;
+            }
+            else {
+                return twogramCompare;
+            }
         }
-        return compare;
+        return decadeCompare;
     }
 
     public void write(DataOutput out) throws IOException {
@@ -74,6 +94,7 @@ public class Decade2GramC1C2 implements WritableComparable {
         out.writeUTF(twogram);
         out.writeInt(c1);
         out.writeInt(c2);
+        out.writeInt(flag);
     }
 
     public void readFields(DataInput in) throws IOException {
@@ -81,6 +102,7 @@ public class Decade2GramC1C2 implements WritableComparable {
         twogram = in.readUTF();
         c1 = in.readInt();
         c2 = in.readInt();
+        flag = in.readInt();
     }
 
     public static Decade2GramC1C2 read(DataInput in) throws IOException {

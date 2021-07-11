@@ -7,29 +7,33 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class StringIntWritable implements WritableComparable {
-    private int decade;
+public class StringStringIntWritable implements WritableComparable {
     private String twogram;
+    private String secondPair;
+    private int decade;
 
     public void write(DataOutput out) throws IOException {
-        out.writeInt(decade);
         out.writeBytes(twogram);
+        out.writeBytes(secondPair);
+        out.writeInt(decade);
     }
 
-    public StringIntWritable(){}
+    public StringStringIntWritable(){}
 
-    public StringIntWritable(String twogram, int decade){
+    public StringStringIntWritable(String twogram, String secondPair, int decade){
         // convert to utf-8
         byte[] bytes = twogram.getBytes(StandardCharsets.UTF_8);
         String utf8EncodedString = new String(bytes, StandardCharsets.UTF_8);
         twogram = utf8EncodedString;
         this.twogram = twogram;
+        this.secondPair = secondPair;
         this.decade = decade;
     }
 
     public void readFields(DataInput in) throws IOException {
-        decade = in.readInt();
         twogram = in.readLine();
+        secondPair = in.readLine();
+        decade = in.readInt();
         // convert to utf-8
         byte[] bytes = twogram.getBytes(StandardCharsets.UTF_8);
         String utf8EncodedString = new String(bytes, StandardCharsets.UTF_8);
@@ -44,6 +48,10 @@ public class StringIntWritable implements WritableComparable {
         return twogram;
     }
 
+    public String getSecondPair() {
+        return secondPair;
+    }
+
     public void setDecade(int decade) {
         this.decade = decade;
     }
@@ -52,22 +60,26 @@ public class StringIntWritable implements WritableComparable {
         this.twogram = twogram;
     }
 
-    public static StringIntWritable read(DataInput in) throws IOException {
-        StringIntWritable si = new StringIntWritable();
+    public void setSecondPair(String secondPair) {
+        this.secondPair = secondPair;
+    }
+
+    public static StringStringIntWritable read(DataInput in) throws IOException {
+        StringStringIntWritable si = new StringStringIntWritable();
         si.readFields(in);
         return si;
     }
 
     @Override
     public int compareTo(Object o) {
-        int compare = ((StringIntWritable)o).getDecade() - this.getDecade();
+        int compare = ((StringStringIntWritable)o).getDecade() - this.getDecade();
         if ( compare == 0){
-            return ((StringIntWritable)o).getTwogram().compareTo(this.getTwogram());
+            return ((StringStringIntWritable)o).getTwogram().compareTo(this.getTwogram());
         }
         return compare;
     }
 
     public String toString(){
-        return twogram + "\t" + decade;
+        return twogram + "\t" + secondPair + "\t" + decade;
     }
 }

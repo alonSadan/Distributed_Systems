@@ -1,7 +1,6 @@
 package ass2;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.StringTokenizer;
 
 //import org.apache.giraph.writable.tuple.PairWritable;
@@ -16,26 +15,21 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class TwoGramPerDecade {
 
-public static class MapperClass extends Mapper<LongWritable, Text, StringIntWritable, IntWritable> {
+public static class MapperClass extends Mapper<LongWritable, Text, StringStringIntWritable, IntWritable> {
     private int decade;
     private String twogram;
     private IntWritable count = new IntWritable(0);
-    private StringIntWritable si = new StringIntWritable("",0);
+    private StringStringIntWritable ssi = new StringStringIntWritable("","",0);
 
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException,  InterruptedException {
       StringTokenizer itr = new StringTokenizer(value.toString());
-        String utf8EncodedString = null;
         String w1 = null;
         String w2 = null;
       if(itr.countTokens() > 3){
           w1 = itr.nextToken();
           w2 = itr.nextToken();
           twogram = (w1 + " " + w2);
-          // convert to utf-8
-          byte[] bytes = twogram.getBytes(StandardCharsets.UTF_8);
-          utf8EncodedString = new String(bytes, StandardCharsets.UTF_8);
-          
           String strYear = itr.nextToken();
           decade = (Integer.parseInt(strYear.substring(0,3) + "0"));
           count.set(Integer.parseInt(itr.nextToken()));
@@ -43,47 +37,49 @@ public static class MapperClass extends Mapper<LongWritable, Text, StringIntWrit
         if (w1 == null || w2 == null){ // just to check
             return;
         }
-      si.setDecade(decade);
-      si.setTwogram(utf8EncodedString);
-      context.write(si, count);
-      context.write(new StringIntWritable(w1 + " *", decade), count);
-      context.write(new StringIntWritable("* " + w2, decade), count);
+      ssi.setTwogram(twogram);
+      ssi.setSecondPair(twogram);
+      ssi.setDecade(decade);
+      context.write(ssi, count);
+      context.write(new StringStringIntWritable(twogram,w1 + " *", decade), count);
+      context.write(new StringStringIntWritable(twogram,"* " + w2, decade), count);
     }
   }
 
 
-  public static class ReducerClass extends Reducer <StringIntWritable, IntWritable, Text, SumDecadeWritable> {
+  public static class ReducerClass extends Reducer <StringStringIntWritable, IntWritable, Text, SecondPairSumDecadeWritable> {
     private Text two_gram = new Text();
-    private SumDecadeWritable sumDecadeC1 = new SumDecadeWritable(0,0, 0);
+    private SecondPairSumDecadeWritable pairSumDecade = new SecondPairSumDecadeWritable(0,0, "");
     private int currentN = 0;
-    int currentDecade = 0;
+    private int currentDecade = 0;
     @Override
-    public void reduce(StringIntWritable key, Iterable<IntWritable> values, Context context) throws IOException,  InterruptedException {
+    public void reduce(StringStringIntWritable key, Iterable<IntWritable> values, Context context) throws IOException,  InterruptedException {
       int sum = 0;
       int decade = key.getDecade();
+      String secondPair = key.getSecondPair();
       String twogram = key.getTwogram();
+
 //        < 1960, (shlomo, dani) > {3, 5, 8, 1}
 //        < (shlomo, *), 1960 > {3, 5, 8, 1}
 //        < (*, dani), 1960 > {3, 5, 8, 1}
         // convert to utf-8
-        byte[] bytes = twogram.getBytes(StandardCharsets.UTF_8);
-        String utf8EncodedString = new String(bytes, StandardCharsets.UTF_8);
 
       for (IntWritable count : values) {
         sum += count.get();
       }
-      if (!twogram.contains("*"))
-        currentN += sum;
-      if (currentDecade != decade){
-            context.write(new Text("*N*"), new SumDecadeWritable(currentN,currentDecade,0) );
-            currentN = 0;
-            currentDecade = decade;
-      }
-      two_gram.set(utf8EncodedString);
-      sumDecadeC1.setSum(sum);
-      sumDecadeC1.setDecade(decade);
-      context.write(two_gram, sumDecadeC1 );
-//      context.write("N", N );
+//      if (!twogram.contains("*"))
+//        currentN += sum;
+//      if (currentDecade != decade){
+//            context.write(new Text("*N*"), new TwogramSumDecadeWritable(currentN,currentDecade,"") );
+//            currentN = 0;
+//            currentDecade = decade;
+//      }
+
+      two_gram.set(twogram);
+      pairSumDecade.setSum(sum);
+      pairSumDecade.setDecade(decade);
+      pairSumDecade.setSecondPair(secondPair);
+      context.write(two_gram, pairSumDecade );
     }
   }
 
@@ -118,10 +114,10 @@ public static class MapperClass extends Mapper<LongWritable, Text, StringIntWrit
 //    job.setCombinerClass(ReducerClass.class);
 
     job.setReducerClass(ReducerClass.class);
-    job.setMapOutputKeyClass(StringIntWritable.class);
+    job.setMapOutputKeyClass(StringStringIntWritable.class);
     job.setMapOutputValueClass(IntWritable.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(SumDecadeWritable.class);
+    job.setOutputValueClass(SecondPairSumDecadeWritable.class);
 //    job.setNumReduceTasks(20);
 //    job.setInputFormatClass(SequenceFileInputFormat.class);
     FileInputFormat.addInputPath(job, new Path(args[0]));
