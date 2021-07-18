@@ -11,6 +11,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -19,7 +21,7 @@ public class C1Calculator {
     public static class MapperClass extends Mapper<LongWritable, Text, Decade2GramC1C2, StringIntWritable> {
         private Decade2GramC1C2 shlomo = new Decade2GramC1C2(3,"shlomo",0,0,0);
         private StringIntWritable si = new StringIntWritable("si",2);
-
+        private fileContainsWord stopWordsFinder = new fileContainsWord("C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Collocation_Extraction\\stopWords.txt");
 
 //        @Override
         public void map(LongWritable key, Text value, Context context) throws IOException,  InterruptedException {
@@ -35,9 +37,10 @@ public class C1Calculator {
                 decade = (Integer.parseInt(strYear.substring(0,3) + "0"));
                 count = Integer.parseInt(itr.nextToken());
             }
-            if (w1 == null || w2 == null){ // just to check
+            if (stopWordsFinder.contains(w1) || stopWordsFinder.contains(w2)){
                 return;
             }
+
             si.setStr(w2);
             si.setNumber(count);
             shlomo.setDecade(decade);
@@ -80,24 +83,24 @@ public class C1Calculator {
 //      }
 //    }
 
-    public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "c1_calculator");
-        job.setJarByClass(C1Calculator.class);
-        job.setMapperClass(MapperClass.class);
-//    job.setPartitionerClass(PartitionerClass.class);
-//    job.setCombinerClass(ReducerClass.class);
-        job.setReducerClass(ReducerClass.class);
-        job.setMapOutputKeyClass(Decade2GramC1C2.class);
-        job.setMapOutputValueClass(StringIntWritable.class);
-        job.setOutputKeyClass(Decade2GramC1C2.class);
-        job.setOutputValueClass(IntWritable.class);
-//    job.setNumReduceTasks(20);
-//    job.setInputFormatClass(SequenceFileInputFormat.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1] +  new Date().getTime()));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
-    }
+//    public static void main(String[] args) throws Exception {
+//        Configuration conf = new Configuration();
+//        Job job = Job.getInstance(conf, "c1_calculator");
+//        job.setJarByClass(C1Calculator.class);
+//        job.setMapperClass(MapperClass.class);
+////    job.setPartitionerClass(PartitionerClass.class);
+////    job.setCombinerClass(ReducerClass.class);
+//        job.setReducerClass(ReducerClass.class);
+//        job.setMapOutputKeyClass(Decade2GramC1C2.class);
+//        job.setMapOutputValueClass(StringIntWritable.class);
+//        job.setOutputKeyClass(Decade2GramC1C2.class);
+//        job.setOutputValueClass(IntWritable.class);
+////    job.setNumReduceTasks(20);
+////    job.setInputFormatClass(SequenceFileInputFormat.class);
+//        FileInputFormat.addInputPath(job, new Path(args[0]));
+//        FileOutputFormat.setOutputPath(job, new Path(args[1] +  new Date().getTime()));
+//        System.exit(job.waitForCompletion(true) ? 0 : 1);
+//    }
 
 }
 
