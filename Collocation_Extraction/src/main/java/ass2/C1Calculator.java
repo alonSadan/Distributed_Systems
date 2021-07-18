@@ -12,36 +12,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class C1Calculator {
-    /*
-     alon yotam 2002 2 //flag
-     alon yotam 2002 2
-     alon yotam 2003 3 //flag
-     alon yotam 2003 3
-     alon yotam 2004 4 //flag
-     alon yotam 2004 4
-     alon moshe 2004 5 //flag
-     alon, moshe 2004 5
-
-after shuffle & sort:
-    alon yotam 2000 2 flag
-    alon yotam 2000 3 flag
-    alon yotam 2000 4 flag
-    alon, moshe 2000 5 flag
-    alon yotam 2002 4
-    alon yotam 2002 4
-    alon, moshe 2003 5
-    alon, moshe 2004 5
-
-    reducer:
-    flag? sum += count
-    not flag? write with for each
-*/
 
     public static class MapperClass extends Mapper<LongWritable, Text, Decade2GramC1C2, StringIntWritable> {
         private Decade2GramC1C2 shlomo = new Decade2GramC1C2(3,"shlomo",0,0,0);
@@ -107,24 +80,24 @@ after shuffle & sort:
 //      }
 //    }
 
-//    public static void main(String[] args) throws Exception {
-//        Configuration conf = new Configuration();
-//        Job job = Job.getInstance(conf, "c1_calculator");
-//        job.setJarByClass(C1Calculator.class);
-//        job.setMapperClass(MapperClass.class);
-////    job.setPartitionerClass(PartitionerClass.class);
-////    job.setCombinerClass(ReducerClass.class);
-//        job.setReducerClass(ReducerClass.class);
-//        job.setMapOutputKeyClass(Decade2GramC1C2.class);
-//        job.setMapOutputValueClass(StringIntWritable.class);
-//        job.setOutputKeyClass(Decade2GramC1C2.class);
-//        job.setOutputValueClass(IntWritable.class);
-////    job.setNumReduceTasks(20);
-////    job.setInputFormatClass(SequenceFileInputFormat.class);
-//        FileInputFormat.addInputPath(job, new Path(args[0]));
-//        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-//        System.exit(job.waitForCompletion(true) ? 0 : 1);
-//    }
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "c1_calculator");
+        job.setJarByClass(C1Calculator.class);
+        job.setMapperClass(MapperClass.class);
+//    job.setPartitionerClass(PartitionerClass.class);
+//    job.setCombinerClass(ReducerClass.class);
+        job.setReducerClass(ReducerClass.class);
+        job.setMapOutputKeyClass(Decade2GramC1C2.class);
+        job.setMapOutputValueClass(StringIntWritable.class);
+        job.setOutputKeyClass(Decade2GramC1C2.class);
+        job.setOutputValueClass(IntWritable.class);
+//    job.setNumReduceTasks(20);
+//    job.setInputFormatClass(SequenceFileInputFormat.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1] +  new Date().getTime()));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
 
 }
 

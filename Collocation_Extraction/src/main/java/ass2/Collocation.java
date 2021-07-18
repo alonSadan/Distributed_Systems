@@ -57,7 +57,6 @@ public class Collocation {
                 }
             }
         }
-
     }
 
 //    public static class PartitionerClass extends Partitioner<Text, IntWritable> {
