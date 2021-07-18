@@ -13,6 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.chain.Chain;
 
 import java.io.IOException;
+import java.util.Date;
 
 public class Main {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
@@ -37,47 +38,61 @@ public class Main {
 //            code = jc.getFailedJobList().size() == 0 ? 0 : 1;
 
 
-        Configuration conf1 = new Configuration();
-        Configuration conf2 = new Configuration();
-        Configuration conf3 = new Configuration();
-        Configuration conf4 = new Configuration();
-        Job c1Calculator = createJob(conf1, "C1Calculator", C1Calculator.class, C1Calculator.MapperClass.class, C1Calculator.ReducerClass.class,
+        Configuration C1CalcConf = new Configuration();
+        String job1Name = "C1Calculator";
+        String outputInput1 = job1Name + new Date().getTime();
+
+        Configuration C2CalcConf = new Configuration();
+        String job2Name = "C2Calculator";
+        String outputInput2 = job2Name + new Date().getTime();
+
+        Configuration npmiCalcConf = new Configuration();
+        String job3Name = "NPMICalculator";
+        String outputInput3 = job3Name + new Date().getTime();
+
+        Configuration collocationConf = new Configuration();
+        String job4Name = "Collocation";
+        collocationConf.setDouble("minPmi", Double.parseDouble(args[1]));
+        collocationConf.setDouble("relMinPmi", Double.parseDouble(args[2]));
+
+        Job c1Calculator = createJob(C1CalcConf, job1Name, C1Calculator.class, C1Calculator.MapperClass.class, C1Calculator.ReducerClass.class,
                 Decade2GramC1C2.class, StringIntWritable.class, Decade2GramC1C2.class, IntWritable.class,
-                args[0], "C1Calculator", false);
+                args[0], outputInput1, false);
 
-        Job c2Calculator = createJob(conf2, "C2Calculator", C2Calculator.class, C2Calculator.MapperClass.class, C2Calculator.ReducerClass.class,
+        Job c2Calculator = createJob(C2CalcConf, job2Name, C2Calculator.class, C2Calculator.MapperClass.class, C2Calculator.ReducerClass.class,
                 Decade2GramC1C2.class, StringIntIntWritable.class, Decade2GramC1C2.class, IntWritable.class,
-                "C1Calculator" + "\\" + "part-r-00000", "C2Calculator", false);
+                outputInput1 + "\\" + "part-r-00000", outputInput2, false);
 
-        Job npmiCalculator = createJob(conf3, "NPMICalculator", NPMICalculator.class, NPMICalculator.MapperClass.class, NPMICalculator.ReducerClass.class,
+        Job npmiCalculator = createJob(npmiCalcConf, job3Name, NPMICalculator.class, NPMICalculator.MapperClass.class, NPMICalculator.ReducerClass.class,
                 Decade2GramC1C2.class, IntWritable.class, StringIntWritable.class, DoubleWritable.class,
-                "C2Calculator" + "\\" + "part-r-00000", "NPMICalculator", false);
+                outputInput2 + "\\" + "part-r-00000", outputInput3, false);
 
-        Job collocation = createJob(conf4, "Collocation", Collocation.class, Collocation.MapperClass.class, Collocation.ReducerClass.class,
+        Job collocation = createJob(collocationConf, job4Name, Collocation.class, Collocation.MapperClass.class, Collocation.ReducerClass.class,
                 IntDoubleStringWritable.class, Text.class, IntDoubleStringWritable.class, Text.class,
-                "NPMICalculator" + "\\" + "part-r-00000", "Collocation", true);
-            if (c1Calculator.waitForCompletion(true)) {
-                ControlledJob firstControlledJob = new ControlledJob(c1Calculator.getConfiguration());
-                ControlledJob secondControlledJob = new ControlledJob(c2Calculator.getConfiguration());
-                secondControlledJob.addDependingJob(firstControlledJob);
-                ControlledJob thirdControlledJob = new ControlledJob(npmiCalculator.getConfiguration());
-                thirdControlledJob.addDependingJob(secondControlledJob);
-                ControlledJob fourthControlledJob = new ControlledJob(collocation.getConfiguration());
-                fourthControlledJob.addDependingJob(thirdControlledJob);
-                JobControl jc = new JobControl("job_chaining");
-                jc.addJob(firstControlledJob);
-                jc.addJob(secondControlledJob);
-                jc.addJob(thirdControlledJob);
-                jc.addJob(fourthControlledJob);
-                jc.run();
-                System.exit(jc.getFailedJobList().size() == 0 ? 0 : 1);
-            }
+                outputInput3 + "\\" + "part-r-00000", job4Name + new Date().getTime(), true);
+
+        if (c1Calculator.waitForCompletion(true)) {
+            ControlledJob firstControlledJob = new ControlledJob(c1Calculator.getConfiguration());
+            ControlledJob secondControlledJob = new ControlledJob(c2Calculator.getConfiguration());
+            secondControlledJob.addDependingJob(firstControlledJob);
+            ControlledJob thirdControlledJob = new ControlledJob(npmiCalculator.getConfiguration());
+            thirdControlledJob.addDependingJob(secondControlledJob);
+            ControlledJob fourthControlledJob = new ControlledJob(collocation.getConfiguration());
+            fourthControlledJob.addDependingJob(thirdControlledJob);
+            JobControl jc = new JobControl("job_chaining");
+            jc.addJob(firstControlledJob);
+            jc.addJob(secondControlledJob);
+            jc.addJob(thirdControlledJob);
+            jc.addJob(fourthControlledJob);
+            jc.run();
+            System.exit(jc.getFailedJobList().size() == 0 ? 0 : 1);
+        }
 
     }
 
 
     public static Job createJob(Configuration conf, String jobName, Class jar, Class mapper, Class reducer, Class mapOutputKey, Class mapOutputValue,
-                         Class outputKey, Class outputValue, String inputPath, String outputPath, boolean last) throws IOException, ClassNotFoundException, InterruptedException {
+                                Class outputKey, Class outputValue, String inputPath, String outputPath, boolean last) throws IOException, ClassNotFoundException, InterruptedException {
         Job job = Job.getInstance(conf, jobName);
         job.setJarByClass(jar);
         job.setMapperClass(mapper);

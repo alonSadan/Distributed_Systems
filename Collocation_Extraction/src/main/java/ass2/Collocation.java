@@ -1,4 +1,5 @@
 package ass2;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
@@ -16,19 +17,19 @@ public class Collocation {
         private IntDoubleStringWritable decadeNpmiTwogram = new IntDoubleStringWritable();
 
         //        @Override
-        public void map(LongWritable key, Text value, Context context) throws IOException,  InterruptedException {
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             StringTokenizer itr = new StringTokenizer(value.toString());
             String w1 = null;
             String w2 = null;
             int decade = 0;
             double npmi = 0;
-            if(itr.countTokens() > 3){
+            if (itr.countTokens() > 3) {
                 w1 = itr.nextToken();
                 w2 = itr.nextToken();
                 decade = Integer.parseInt(itr.nextToken());
                 npmi = Double.parseDouble(itr.nextToken());
             }
-            if (w1 == null || w2 == null){ // just to check
+            if (w1 == null || w2 == null) { // just to check
                 return;
             }
             decadeNpmiTwogram.setDuble(npmi);
@@ -40,19 +41,21 @@ public class Collocation {
 
 
     public static class ReducerClass extends Reducer<IntDoubleStringWritable, Text, IntDoubleStringWritable, Text> {
-        private double minPmi = 0.5;
-        private double relMinPmi = 0.2;
         private double decadeNPMI = 0.0;
         private int run = 0;
 
         //        @Override
-        public void reduce(IntDoubleStringWritable key, Iterable<Text> values, Context context) throws IOException,  InterruptedException {
+        public void reduce(IntDoubleStringWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            Configuration conf = context.getConfiguration();
+            double minPmi = conf.getDouble("minPmi", 0.0);
+            double relMinPmi = conf.getDouble("relMinPmi", 0.0);
+
             if (key.getStr().equals("* *")) {
                 decadeNPMI = key.getDouble();
             } else {
                 double npmi = key.getDouble();
                 // C1Calculator discards the stop words
-                if ( (npmi > minPmi) || ( (npmi / decadeNPMI) > relMinPmi) ) {
+                if ((npmi > minPmi) || ((npmi / decadeNPMI) > relMinPmi)) {
                     context.write(key, new Text(""));
                 }
             }
