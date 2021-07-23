@@ -83,22 +83,22 @@ public class C2Calculator {
 //      }
 //    }
 
-//    public static void main(String[] args) throws Exception {
-//        Configuration conf = new Configuration();
-//        Job job = Job.getInstance(conf, "c2_calculator");
-//        job.setJarByClass(C2Calculator.class);
-//        job.setMapperClass(C2Calculator.MapperClass.class);
-////    job.setPartitionerClass(PartitionerClass.class);
-////    job.setCombinerClass(ReducerClass.class);
-//        job.setReducerClass(C2Calculator.ReducerClass.class);
-//        job.setMapOutputKeyClass(Decade2GramC1C2.class);
-//        job.setMapOutputValueClass(StringIntIntWritable.class);
-//        job.setOutputKeyClass(Decade2GramC1C2.class);
-//        job.setOutputValueClass(IntWritable.class);
-////    job.setNumReduceTasks(20);
-////    job.setInputFormatClass(SequenceFileInputFormat.class);
-//        FileInputFormat.addInputPath(job, new Path(args[0]));
-//        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-//        System.exit(job.waitForCompletion(true) ? 0 : 1);
-//    }
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "c2_calculator");
+        job.setJarByClass(C2Calculator.class);
+        job.setMapperClass(C2Calculator.MapperClass.class);
+//    job.setPartitionerClass(PartitionerClass.class);
+//    job.setCombinerClass(ReducerClass.class);
+        job.setReducerClass(C2Calculator.ReducerClass.class);
+        job.setMapOutputKeyClass(Decade2GramC1C2.class);
+        job.setMapOutputValueClass(StringIntIntWritable.class);
+        job.setOutputKeyClass(Decade2GramC1C2.class);
+        job.setOutputValueClass(IntWritable.class);
+//    job.setNumReduceTasks(20);
+//    job.setInputFormatClass(SequenceFileInputFormat.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
 }

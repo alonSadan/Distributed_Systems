@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.File;
@@ -21,9 +22,16 @@ public class C1Calculator {
     public static class MapperClass extends Mapper<LongWritable, Text, Decade2GramC1C2, StringIntWritable> {
         private Decade2GramC1C2 shlomo = new Decade2GramC1C2(3,"shlomo",0,0,0);
         private StringIntWritable si = new StringIntWritable("si",2);
-        private fileContainsWord stopWordsFinder = new fileContainsWord("C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Collocation_Extraction\\stopWords.txt");
-
+        private final String stopWordsFileName = "stopWords" + new Date().getTime() + ".txt";
+        fileContainsWord stopWordsFinder;
 //        @Override
+        @Override
+        public void setup(Context context) throws IOException {
+            //this will be executed once on each mapper before first map(..) call
+            S3ObjectOperations.getObject("ass2jar", "stopWords.txt", stopWordsFileName);
+            stopWordsFinder = new fileContainsWord(stopWordsFileName);
+        }
+
         public void map(LongWritable key, Text value, Context context) throws IOException,  InterruptedException {
             StringTokenizer itr = new StringTokenizer(value.toString());
             String w1 = null;
@@ -34,6 +42,8 @@ public class C1Calculator {
                 w1 = itr.nextToken();
                 w2 = itr.nextToken();
                 String strYear = itr.nextToken();
+                System.err.println("yotam " + strYear);
+
                 decade = (Integer.parseInt(strYear.substring(0,3) + "0"));
                 count = Integer.parseInt(itr.nextToken());
             }
@@ -83,24 +93,25 @@ public class C1Calculator {
 //      }
 //    }
 
-//    public static void main(String[] args) throws Exception {
-//        Configuration conf = new Configuration();
-//        Job job = Job.getInstance(conf, "c1_calculator");
-//        job.setJarByClass(C1Calculator.class);
-//        job.setMapperClass(MapperClass.class);
-////    job.setPartitionerClass(PartitionerClass.class);
-////    job.setCombinerClass(ReducerClass.class);
-//        job.setReducerClass(ReducerClass.class);
-//        job.setMapOutputKeyClass(Decade2GramC1C2.class);
-//        job.setMapOutputValueClass(StringIntWritable.class);
-//        job.setOutputKeyClass(Decade2GramC1C2.class);
-//        job.setOutputValueClass(IntWritable.class);
-////    job.setNumReduceTasks(20);
-////    job.setInputFormatClass(SequenceFileInputFormat.class);
-//        FileInputFormat.addInputPath(job, new Path(args[0]));
-//        FileOutputFormat.setOutputPath(job, new Path(args[1] +  new Date().getTime()));
-//        System.exit(job.waitForCompletion(true) ? 0 : 1);
-//    }
+   public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+       Job job = Job.getInstance(conf, "c1_calculator");
+        job.setJarByClass(C1Calculator.class);
+        job.setMapperClass(MapperClass.class);
+//    job.setPartitionerClass(PartitionerClass.class);
+//    job.setCombinerClass(ReducerClass.class);
+        job.setReducerClass(ReducerClass.class);
+        job.setMapOutputKeyClass(Decade2GramC1C2.class);
+        job.setMapOutputValueClass(StringIntWritable.class);
+        job.setOutputKeyClass(Decade2GramC1C2.class);
+        job.setOutputValueClass(IntWritable.class);
+//    job.setNumReduceTasks(20);
+        //job.setInputFormatClass(SequenceFileInputFormat.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1] + new Date().getTime()));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+
+   }
 
 }
 
