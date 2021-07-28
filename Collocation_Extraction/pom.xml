@@ -44,10 +44,8 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>3.2.1</version>
-
-            <!--            3.2.1-->
+            <!--        2.8.5-->
         </dependency>
-        <!--        2.8.5-->
         <!--        <dependency>-->
         <!--            <groupId>org.apache.giraph</groupId>-->
         <!--            <artifactId>giraph-core</artifactId>-->

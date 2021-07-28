@@ -46,10 +46,10 @@ public class Runner {
 
        // AWSCredentials credentials = new PropertiesCredentials(new File("C:\\Users\\alons\\.aws\\credentials"));
 
-        //AmazonElasticMapReduce mapReduce = AmazonElasticMapReduceClient.builder().withRegion("us-east-1") withCredentials(new com.amazonaws.auth.InstanceProfileCredentialsProvider()).build();
-        //AmazonElasticMapReduce mapReduce = AmazonElasticMapReduceClient.builder().build();
-        //"s3://datasets.elasticmapreduce/ngrams/books/20090715/heb-all/2gram/data"
-        HadoopJarStepConfig step1 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.C1Calculator", "s3://ass2jar/heb-2-:wq:wq:wq:+gram-example.txt", "s3://ass2jar/output1/");
+        // AmazonElasticMapReduce mapReduce = AmazonElasticMapReduceClient.builder().withRegion("us-east-1") withCredentials(new com.amazonaws.auth.InstanceProfileCredentialsProvider()).build();
+        // AmazonElasticMapReduce mapReduce = AmazonElasticMapReduceClient.builder().build();
+        // "s3://datasets.elasticmapreduce/ngrams/books/20090715/heb-all/2gram/data"    s3://ass2jar/heb-2-gram-example.txt
+        HadoopJarStepConfig step1 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.C1Calculator", "s3://datasets.elasticmapreduce/ngrams/books/20090715/heb-all/2gram/data", "s3://ass2jar/output1/");
         HadoopJarStepConfig step2 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.C2Calculator", "s3://ass2jar/output1/part-r-00000", "s3://ass2jar/output2/");
         HadoopJarStepConfig step3 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.NPMICalculator", "s3://ass2jar/output2/part-r-00000", "s3://ass2jar/output3/");
         HadoopJarStepConfig step4 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.Collocation", "s3://ass2jar/output3/part-r-00000", "s3://ass2jar/output4/", args[0], args[1]);

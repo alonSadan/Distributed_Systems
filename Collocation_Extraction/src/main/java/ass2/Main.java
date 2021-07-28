@@ -21,7 +21,6 @@ public class Main {
 
         Configuration conf = new Configuration();
 
-
         Configuration C1CalcConf = new Configuration();
         String job1Name = "C1Calculator";
         String outputInput1 = job1Name + new Date().getTime();

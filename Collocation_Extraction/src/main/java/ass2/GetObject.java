@@ -5,9 +5,9 @@ import java.net.URISyntaxException;
 
 public class GetObject{
     public static void main(String[] args) throws IOException, URISyntaxException {
-//        getObject("s3://datasets.elasticmapreduce/ngrams/books/20090715/heb-all/2gram/data");
+        getObject("s3://datasets.elasticmapreduce/ngrams/books/20090715/heb-all/2gram/data");
 
-        S3ObjectOperations.getObject("ass2jar", "stopWords.txt","yotam");
+        // S3ObjectOperations.getObject("ass2jar", "stopWords.txt","yotam");
 
     }
 

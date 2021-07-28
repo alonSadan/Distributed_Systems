@@ -19,7 +19,6 @@ public class fileContainsWord {
     public boolean contains(String word) throws FileNotFoundException {
         try {
             Scanner scanner = new Scanner(f);
-
             int lineNum = 0;
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
@@ -28,10 +27,12 @@ public class fileContainsWord {
                     return true;
                 }
             }
+            scanner.close();
         } catch (
                 FileNotFoundException e) {
             e.printStackTrace();
         }
+
         return false;
     }
 }
