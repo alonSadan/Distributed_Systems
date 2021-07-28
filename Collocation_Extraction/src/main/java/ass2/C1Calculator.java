@@ -30,6 +30,8 @@ public class C1Calculator {
             //this will be executed once on each mapper before first map(..) call
             S3ObjectOperations.getObject("ass2jar", "stopWords.txt", stopWordsFileName);
             stopWordsFinder = new fileContainsWord(stopWordsFileName);
+
+//            stopWordsFinder = new fileContainsWord("C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Collocation_Extraction\\stopWords.txt");
         }
 
 //        public void map(LongWritable key, Text value, Context context) throws IOException,  InterruptedException {
@@ -188,10 +190,10 @@ public class C1Calculator {
         job.setOutputKeyClass(Decade2GramC1C2.class);
         job.setOutputValueClass(IntWritable.class);
 
-        job.setInputFormatClass(SequenceFileInputFormat.class);
+       // job.setInputFormatClass(SequenceFileInputFormat.class);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1] + new Date().getTime()));
         System.exit(job.waitForCompletion(true) ? 0 : 1);
 
    }

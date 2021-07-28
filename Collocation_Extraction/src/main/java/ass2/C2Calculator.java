@@ -52,7 +52,6 @@ public class C2Calculator {
         }
     }
 
-
     public static class ReducerClass extends Reducer<Decade2GramC1C2, StringIntIntWritable, Decade2GramC1C2, IntWritable> {
         private IntWritable count = new IntWritable(0);
         private int sum = 0;
