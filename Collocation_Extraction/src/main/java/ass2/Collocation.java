@@ -69,30 +69,30 @@ public class Collocation {
 //      }
 //    }
 
-    public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "Collacation");
-        job.setJarByClass(Collocation.class);
-        job.setMapperClass(Collocation.MapperClass.class);
-//    job.setPartitionerClass(PartitionerClass.class);
-        job.setCombinerClass(ReducerClass.class);
-        job.setReducerClass(Collocation.ReducerClass.class);
-
-        job.setMapOutputKeyClass(IntDoubleStringWritable.class);
-
-        job.setMapOutputValueClass(Text.class);
-
-        job.setOutputKeyClass(IntDoubleStringWritable.class);
-
-        job.setOutputValueClass(Text.class);
-//    job.setNumReduceTasks(20);
-//    job.setInputFormatClass(SequenceFileInputFormat.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-
-        conf.setDouble("minPmi", Double.parseDouble(args[2]));
-        conf.setDouble("relMinPmi", Double.parseDouble(args[3]));
-
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
-    }
+//    public static void main(String[] args) throws Exception {
+//        Configuration conf = new Configuration();
+//        Job job = Job.getInstance(conf, "Collacation");
+//        job.setJarByClass(Collocation.class);
+//        job.setMapperClass(Collocation.MapperClass.class);
+////    job.setPartitionerClass(PartitionerClass.class);
+//        job.setCombinerClass(ReducerClass.class);
+//        job.setReducerClass(Collocation.ReducerClass.class);
+//
+//        job.setMapOutputKeyClass(IntDoubleStringWritable.class);
+//
+//        job.setMapOutputValueClass(Text.class);
+//
+//        job.setOutputKeyClass(IntDoubleStringWritable.class);
+//
+//        job.setOutputValueClass(Text.class);
+////    job.setNumReduceTasks(20);
+////    job.setInputFormatClass(SequenceFileInputFormat.class);
+//        FileInputFormat.addInputPath(job, new Path(args[0]));
+//        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+//
+//        conf.setDouble("minPmi", Double.parseDouble(args[2]));
+//        conf.setDouble("relMinPmi", Double.parseDouble(args[3]));
+//
+//        System.exit(job.waitForCompletion(true) ? 0 : 1);
+//    }
 }

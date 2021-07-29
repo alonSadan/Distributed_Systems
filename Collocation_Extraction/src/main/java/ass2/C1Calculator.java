@@ -32,7 +32,7 @@ public class C1Calculator {
 
             S3ObjectOperations.getObject("ass2jar", "stopWords.txt", stopWordsFileName);
             stopWordsFinder = new fileContainsWord(stopWordsFileName);
-//            stopWordsFinder = new fileContainsWord("C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Collocation_Extraction\\stopWords.txt");
+            //stopWordsFinder = new fileContainsWord("C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Collocation_Extraction\\stopWords.txt");
         }
 
 //        public void map(LongWritable key, Text value, Context context) throws IOException,  InterruptedException {
@@ -175,26 +175,26 @@ public class C1Calculator {
 //      }
 //    }
 
-    public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "c1_calculator");
-        job.setJarByClass(C1Calculator.class);
-        job.setMapperClass(MapperClass.class);
-//    job.setPartitionerClass(PartitionerClass.class);
-        job.setCombinerClass(C1Combiner.class);
-        job.setReducerClass(ReducerClass.class);
-        job.setMapOutputKeyClass(Decade2GramC1C2.class);
-        job.setMapOutputValueClass(StringIntWritable.class);
-        job.setOutputKeyClass(Decade2GramC1C2.class);
-        job.setOutputValueClass(IntWritable.class);
-
-        job.setInputFormatClass(SequenceFileInputFormat.class);
-
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
-
-    }
+//    public static void main(String[] args) throws Exception {
+//        Configuration conf = new Configuration();
+//        Job job = Job.getInstance(conf, "c1_calculator");
+//        job.setJarByClass(C1Calculator.class);
+//        job.setMapperClass(MapperClass.class);
+////    job.setPartitionerClass(PartitionerClass.class);
+//        job.setCombinerClass(C1Combiner.class);
+//        job.setReducerClass(ReducerClass.class);
+//        job.setMapOutputKeyClass(Decade2GramC1C2.class);
+//        job.setMapOutputValueClass(StringIntWritable.class);
+//        job.setOutputKeyClass(Decade2GramC1C2.class);
+//        job.setOutputValueClass(IntWritable.class);
+//
+//        //job.setInputFormatClass(SequenceFileInputFormat.class);
+//
+//        FileInputFormat.addInputPath(job, new Path(args[0]));
+//        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+//        System.exit(job.waitForCompletion(true) ? 0 : 1);
+//
+//    }
 
 }
 
