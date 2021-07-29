@@ -10,10 +10,12 @@ import java.nio.charset.StandardCharsets;
 public class StringIntWritable implements WritableComparable {
     private String str;
     private int number;
+    private char flag;
 
     public void write(DataOutput out) throws IOException {
         out.writeUTF(str);
         out.writeInt(number);
+        out.writeChar(flag);
     }
 
     public StringIntWritable(){}
@@ -30,6 +32,7 @@ public class StringIntWritable implements WritableComparable {
     public void readFields(DataInput in) throws IOException {
         str = in.readUTF();
         number = in.readInt();
+        flag = in.readChar();
         // convert to utf-8
         byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
         String utf8EncodedString = new String(bytes, StandardCharsets.UTF_8);
@@ -44,6 +47,9 @@ public class StringIntWritable implements WritableComparable {
         return str;
     }
 
+    public char getFlag(){ return flag;}
+
+    public void setFlag(char flag){ this.flag = flag;}
 
     public void setNumber(int number) {
         this.number = number;
@@ -62,11 +68,17 @@ public class StringIntWritable implements WritableComparable {
 
     @Override
     public int compareTo(Object o) {
-        int compare = ((StringIntWritable)o).getNumber() - this.getNumber();
-//        if ( compare == 0){
-//            return ((StringIntWritable)o).getStr().compareTo(this.getStr());
-//        }
-        return compare;
+        int decadeCompare = ((StringIntWritable)o).getNumber() - this.getNumber();
+        if ( decadeCompare == 0){
+            int strCompare =  ((StringIntWritable)o).getStr().compareTo(this.getStr());
+            if (strCompare == 0){
+                return ((StringIntWritable)o).getFlag() - this.getFlag();
+            }
+            else {
+                return strCompare;
+            }
+        }
+        return decadeCompare;
     }
 
     public String toString(){

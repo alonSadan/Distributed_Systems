@@ -72,7 +72,7 @@ public class IntDoubleStringWritable implements WritableComparable {
 
     @Override
     public int compareTo(Object o) {
-        int compare = ((IntDoubleStringWritable)o).getInt() - this.getInt();
+        int compare = ((IntDoubleStringWritable)o).getInt() - this.getInt(); //decade
         if ( compare == 0){
             if ( this.getStr().equals("* *") ){
                 return 1;

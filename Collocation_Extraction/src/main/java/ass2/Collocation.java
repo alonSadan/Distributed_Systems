@@ -63,10 +63,10 @@ public class Collocation {
         }
     }
 
-    public static class PartitionerClass extends Partitioner<Decade2GramC1C2, IntWritable> {
+    public static class PartitionerClass extends Partitioner<IntDoubleStringWritable, Text> {
         @Override
-        public int getPartition(Decade2GramC1C2 key, IntWritable value, int numPartitions) {
-            return ((key.getDecade() % 100) / 10) % numPartitions; // partition by decade
+        public int getPartition(IntDoubleStringWritable key, Text value, int numPartitions) {
+            return ((key.getInt() % 100) / 10) % numPartitions; // partition by decade
         }
     }
 
@@ -77,15 +77,11 @@ public class Collocation {
         job.setJarByClass(Collocation.class);
         job.setMapperClass(Collocation.MapperClass.class);
         job.setPartitionerClass(PartitionerClass.class);
-//    job.setCombinerClass(ReducerClass.class);
+//        job.setCombinerClass(ReducerClass.class); // combiner = reducer
         job.setReducerClass(Collocation.ReducerClass.class);
-
         job.setMapOutputKeyClass(IntDoubleStringWritable.class);
-
         job.setMapOutputValueClass(Text.class);
-
         job.setOutputKeyClass(IntDoubleStringWritable.class);
-
         job.setOutputValueClass(Text.class);
 //    job.setInputFormatClass(SequenceFileInputFormat.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));

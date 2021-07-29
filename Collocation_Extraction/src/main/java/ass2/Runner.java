@@ -27,6 +27,7 @@ import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvide
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 public class Runner {
 
@@ -45,14 +46,15 @@ public class Runner {
                 .build();
 
        // AWSCredentials credentials = new PropertiesCredentials(new File("C:\\Users\\alons\\.aws\\credentials"));
-
         // AmazonElasticMapReduce mapReduce = AmazonElasticMapReduceClient.builder().withRegion("us-east-1") withCredentials(new com.amazonaws.auth.InstanceProfileCredentialsProvider()).build();
         // AmazonElasticMapReduce mapReduce = AmazonElasticMapReduceClient.builder().build();
         // "s3://datasets.elasticmapreduce/ngrams/books/20090715/heb-all/2gram/data"    s3://ass2jar/heb-2-gram-example.txt
-        HadoopJarStepConfig step1 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.C1Calculator", "s3://datasets.elasticmapreduce/ngrams/books/20090715/heb-all/2gram/data", "s3://ass2jar/output1/");
-        HadoopJarStepConfig step2 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.C2Calculator", "s3://ass2jar/output1/part-r-00000", "s3://ass2jar/output2/");
-        HadoopJarStepConfig step3 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.NPMICalculator", "s3://ass2jar/output2/part-r-00000", "s3://ass2jar/output3/");
-        HadoopJarStepConfig step4 = createJarStep("s3://ass2jar/collocation_extraction-1.0-SNAPSHOT-jar-with-dependencies.jar", "ass2.Collocation", "s3://ass2jar/output3/part-r-00000", "s3://ass2jar/output4/", args[0], args[1]);
+        final String jarname = "s3://ass2jar/collocation_extraction-no-combiner-jar-with-dependencies.jar";
+        final String inputoutput = "nocombiner/";
+        HadoopJarStepConfig step1 = createJarStep(jarname, "ass2.C1Calculator", "s3://datasets.elasticmapreduce/ngrams/books/20090715/heb-all/2gram/data", "s3://ass2jar/output1/" + inputoutput);
+        HadoopJarStepConfig step2 = createJarStep(jarname, "ass2.C2Calculator", "s3://ass2jar/output1/" + inputoutput + "part-r-00000", "s3://ass2jar/output2/" + inputoutput);
+        HadoopJarStepConfig step3 = createJarStep(jarname, "ass2.NPMICalculator", "s3://ass2jar/output2/" + inputoutput + "part-r-00000", "s3://ass2jar/output3" + inputoutput);
+        HadoopJarStepConfig step4 = createJarStep(jarname, "ass2.Collocation", "s3://ass2jar/output3/" + inputoutput + "part-r-00000", "s3://ass2jar/output4" + inputoutput, args[0], args[1]);
 
         StepConfig stepConfig1 = createStepConfig("c1Calculator", step1, "TERMINATE_JOB_FLOW");
         StepConfig stepConfig2 = createStepConfig("c2Calculator", step2, "TERMINATE_JOB_FLOW");
@@ -67,7 +69,7 @@ public class Runner {
                 .withKeepJobFlowAliveWhenNoSteps(false)
                 .withPlacement(new PlacementType("us-east-1a"));
         RunJobFlowRequest runFlowRequest = new RunJobFlowRequest()
-                .withName("jobname")
+                .withName("NO_Combiner_4.0")
                 .withInstances(instances)
                 .withServiceRole("EMR_DefaultRole")
                 .withJobFlowRole("EMR_EC2_DefaultRole")

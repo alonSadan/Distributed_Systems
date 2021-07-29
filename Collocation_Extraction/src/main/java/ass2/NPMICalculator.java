@@ -55,7 +55,6 @@ public class NPMICalculator {
                 for (IntWritable value : values) {
                     sum += value.get();
                 }
-
                 context.write(key, new IntWritable(sum));
             }
         }
@@ -111,7 +110,6 @@ public class NPMICalculator {
             decade_NPMI = 0;
         }
 
-
     }
 
 
@@ -121,17 +119,12 @@ public class NPMICalculator {
         job.setJarByClass(NPMICalculator.class);
         job.setMapperClass(NPMICalculator.MapperClass.class);
         // we cannot do a partition because we need to calculate N
-        job.setCombinerClass(NPMICombiner.class);
+//        job.setCombinerClass(NPMICombiner.class);
         job.setReducerClass(NPMICalculator.ReducerClass.class);
-
         job.setMapOutputKeyClass(Decade2GramC1C2.class);
-
         job.setMapOutputValueClass(IntWritable.class);
-
         job.setOutputKeyClass(StringIntWritable.class);
-
         job.setOutputValueClass(DoubleWritable.class);
-
 //    job.setInputFormatClass(SequenceFileInputFormat.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
