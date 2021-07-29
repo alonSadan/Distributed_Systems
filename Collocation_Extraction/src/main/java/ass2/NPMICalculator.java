@@ -47,6 +47,19 @@ public class NPMICalculator {
     }
 
 
+    public static class NPMICombiner extends Reducer<Decade2GramC1C2, IntWritable, Decade2GramC1C2, IntWritable> {
+        public void reduce(Decade2GramC1C2 key, Iterable<IntWritable> values, Mapper.Context context) throws IOException, InterruptedException {
+            int sum = 0;
+            if(key.getTwogram().equals("*N*")) {
+                for (IntWritable value : values) {
+                    sum += value.get();
+                }
+
+                context.write(key, new IntWritable(sum));
+            }
+        }
+    }
+
     public static class ReducerClass extends Reducer<Decade2GramC1C2, IntWritable, StringIntWritable, DoubleWritable> {
         private IntWritable count = new IntWritable(0);
         private int N = 0;
@@ -54,6 +67,8 @@ public class NPMICalculator {
         private int curr_decade = 0;
         private Decade2GramC1C2 last_input_key = new Decade2GramC1C2();
         private IntWritable last_input_value = new IntWritable(0);
+
+
 
         //        @Override
         public void reduce(Decade2GramC1C2 key, Iterable<IntWritable> values, Context context) throws IOException,  InterruptedException {
@@ -113,7 +128,7 @@ public class NPMICalculator {
         job.setJarByClass(NPMICalculator.class);
         job.setMapperClass(NPMICalculator.MapperClass.class);
 //    job.setPartitionerClass(PartitionerClass.class);
-//    job.setCombinerClass(ReducerClass.class);
+        job.setCombinerClass(NPMICombiner.class);
         job.setReducerClass(NPMICalculator.ReducerClass.class);
 
         job.setMapOutputKeyClass(Decade2GramC1C2.class);
