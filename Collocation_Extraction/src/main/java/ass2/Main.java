@@ -40,11 +40,12 @@ public class Main {
 
         Job c1Calculator = createJob(C1CalcConf, job1Name, C1Calculator.class, C1Calculator.MapperClass.class, C1Calculator.ReducerClass.class,
                 Decade2GramC1C2.class, StringIntWritable.class, Decade2GramC1C2.class, IntWritable.class,
-                args[0], outputInput1, false, true);
+                args[0], outputInput1, false, true, C1Calculator.PartitionerClass.class);
 
         Job c2Calculator = createJob(C2CalcConf, job2Name, C2Calculator.class, C2Calculator.MapperClass.class, C2Calculator.ReducerClass.class,
                 Decade2GramC1C2.class, StringIntIntWritable.class, Decade2GramC1C2.class, IntWritable.class,
-                outputInput1 + "\\" + "part-r-00000", outputInput2, false, false);
+                outputInput1 + "\\" + "part-r-00000", outputInput2, false, false,
+                C2Calculator.PartitionerClass.class);
 
         Job npmiCalculator = createJob(npmiCalcConf, job3Name, NPMICalculator.class, NPMICalculator.MapperClass.class, NPMICalculator.ReducerClass.class,
                 Decade2GramC1C2.class, IntWritable.class, StringIntWritable.class, DoubleWritable.class,
@@ -52,7 +53,8 @@ public class Main {
 
         Job collocation = createJob(collocationConf, job4Name, Collocation.class, Collocation.MapperClass.class, Collocation.ReducerClass.class,
                 IntDoubleStringWritable.class, Text.class, IntDoubleStringWritable.class, Text.class,
-                outputInput3 + "\\" + "part-r-00000", job4Name + new Date().getTime(), true, false);
+                outputInput3 + "\\" + "part-r-00000", job4Name + new Date().getTime(),
+                true, false, Collocation.PartitionerClass.class);
 
         if (c1Calculator.waitForCompletion(true)) {
         ControlledJob firstControlledJob = new ControlledJob(c1Calculator.getConfiguration());
@@ -75,10 +77,13 @@ public class Main {
 
 
     public static Job createJob(Configuration conf, String jobName, Class jar, Class mapper, Class reducer, Class mapOutputKey, Class mapOutputValue,
-                                Class outputKey, Class outputValue, String inputPath, String outputPath, boolean last, boolean first) throws IOException, ClassNotFoundException, InterruptedException {
+                                Class outputKey, Class outputValue, String inputPath, String outputPath, boolean last, boolean first, Class... partitioner) throws IOException, ClassNotFoundException, InterruptedException {
         Job job = Job.getInstance(conf, jobName);
         job.setJarByClass(jar);
         job.setMapperClass(mapper);
+        if (partitioner.length > 0){
+            job.setPartitionerClass(partitioner[0]);
+        }
         job.setReducerClass(reducer);
         job.setMapOutputKeyClass(mapOutputKey);
         job.setMapOutputValueClass(mapOutputValue);

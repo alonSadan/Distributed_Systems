@@ -60,7 +60,7 @@ public class Runner {
         StepConfig stepConfig4 = createStepConfig("collocations", step4, "TERMINATE_JOB_FLOW");
 
         JobFlowInstancesConfig instances = new JobFlowInstancesConfig()
-                .withInstanceCount(2)
+                .withInstanceCount(3)
                 .withMasterInstanceType(InstanceType.M5Xlarge.toString())
                 .withSlaveInstanceType(InstanceType.M5Xlarge.toString())
                 .withHadoopVersion("3.2.1").withEc2KeyName("ass2")

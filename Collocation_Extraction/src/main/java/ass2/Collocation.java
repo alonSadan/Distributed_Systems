@@ -5,6 +5,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -62,37 +63,38 @@ public class Collocation {
         }
     }
 
-//    public static class PartitionerClass extends Partitioner<Text, IntWritable> {
-//      @Override
-//      public int getPartition(Text key, IntWritable value, int numPartitions) {
-//        return key.hashCode() % numPartitions;
-//      }
-//    }
+    public static class PartitionerClass extends Partitioner<Decade2GramC1C2, IntWritable> {
+        @Override
+        public int getPartition(Decade2GramC1C2 key, IntWritable value, int numPartitions) {
+            return ((key.getDecade() % 100) / 10) % numPartitions; // partition by decade
+        }
+    }
 
-//    public static void main(String[] args) throws Exception {
-//        Configuration conf = new Configuration();
-//        Job job = Job.getInstance(conf, "Collacation");
-//        job.setJarByClass(Collocation.class);
-//        job.setMapperClass(Collocation.MapperClass.class);
-////    job.setPartitionerClass(PartitionerClass.class);
-//        job.setCombinerClass(ReducerClass.class);
-//        job.setReducerClass(Collocation.ReducerClass.class);
-//
-//        job.setMapOutputKeyClass(IntDoubleStringWritable.class);
-//
-//        job.setMapOutputValueClass(Text.class);
-//
-//        job.setOutputKeyClass(IntDoubleStringWritable.class);
-//
-//        job.setOutputValueClass(Text.class);
-////    job.setNumReduceTasks(20);
-////    job.setInputFormatClass(SequenceFileInputFormat.class);
-//        FileInputFormat.addInputPath(job, new Path(args[0]));
-//        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-//
-//        conf.setDouble("minPmi", Double.parseDouble(args[2]));
-//        conf.setDouble("relMinPmi", Double.parseDouble(args[3]));
-//
-//        System.exit(job.waitForCompletion(true) ? 0 : 1);
-//    }
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Collacation");
+        job.setJarByClass(Collocation.class);
+        job.setMapperClass(Collocation.MapperClass.class);
+        job.setPartitionerClass(PartitionerClass.class);
+//    job.setCombinerClass(ReducerClass.class);
+        job.setReducerClass(Collocation.ReducerClass.class);
+
+        job.setMapOutputKeyClass(IntDoubleStringWritable.class);
+
+        job.setMapOutputValueClass(Text.class);
+
+        job.setOutputKeyClass(IntDoubleStringWritable.class);
+
+        job.setOutputValueClass(Text.class);
+//    job.setInputFormatClass(SequenceFileInputFormat.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+// these 2 lines need to be in the Runner, but we need them in comment for the Main:
+        conf.setDouble("minPmi", Double.parseDouble(args[2]));
+        conf.setDouble("relMinPmi", Double.parseDouble(args[3]));
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+
 }

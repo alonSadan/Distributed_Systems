@@ -4,6 +4,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -62,7 +63,7 @@ public class NPMICalculator {
 
     public static class ReducerClass extends Reducer<Decade2GramC1C2, IntWritable, StringIntWritable, DoubleWritable> {
         private IntWritable count = new IntWritable(0);
-        private int N = 0;
+        private int N = 0; // total number of words in the corpus
         private double decade_NPMI = 0.0;
         private int curr_decade = 0;
         private Decade2GramC1C2 last_input_key = new Decade2GramC1C2();
@@ -113,33 +114,28 @@ public class NPMICalculator {
 
     }
 
-//    public static class PartitionerClass extends Partitioner<Text, IntWritable> {
-//      @Override
-//      public int getPartition(Text key, IntWritable value, int numPartitions) {
-//        return key.hashCode() % numPartitions;
-//      }
-//    }
 
-//    public static void main(String[] args) throws Exception {
-//        Configuration conf = new Configuration();
-//        Job job = Job.getInstance(conf, "NPMI_calculator");
-//        job.setJarByClass(NPMICalculator.class);
-//        job.setMapperClass(NPMICalculator.MapperClass.class);
-////    job.setPartitionerClass(PartitionerClass.class);
-//        job.setCombinerClass(NPMICombiner.class);
-//        job.setReducerClass(NPMICalculator.ReducerClass.class);
-//
-//        job.setMapOutputKeyClass(Decade2GramC1C2.class);
-//
-//        job.setMapOutputValueClass(IntWritable.class);
-//
-//        job.setOutputKeyClass(StringIntWritable.class);
-//
-//        job.setOutputValueClass(DoubleWritable.class);
-////    job.setNumReduceTasks(20);
-////    job.setInputFormatClass(SequenceFileInputFormat.class);
-//        FileInputFormat.addInputPath(job, new Path(args[0]));
-//        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-//        System.exit(job.waitForCompletion(true) ? 0 : 1);
-//    }
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "NPMI_calculator");
+        job.setJarByClass(NPMICalculator.class);
+        job.setMapperClass(NPMICalculator.MapperClass.class);
+        // we cannot do a partition because we need to calculate N
+        job.setCombinerClass(NPMICombiner.class);
+        job.setReducerClass(NPMICalculator.ReducerClass.class);
+
+        job.setMapOutputKeyClass(Decade2GramC1C2.class);
+
+        job.setMapOutputValueClass(IntWritable.class);
+
+        job.setOutputKeyClass(StringIntWritable.class);
+
+        job.setOutputValueClass(DoubleWritable.class);
+
+//    job.setInputFormatClass(SequenceFileInputFormat.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+
 }
