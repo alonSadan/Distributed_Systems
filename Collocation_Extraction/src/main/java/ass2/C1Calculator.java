@@ -20,17 +20,18 @@ import java.util.*;
 public class C1Calculator {
 
     public static class MapperClass extends Mapper<LongWritable, Text, Decade2GramC1C2, StringIntWritable> {
-        private Decade2GramC1C2 shlomo = new Decade2GramC1C2(3,"shlomo",0,0,0);
-        private StringIntWritable si = new StringIntWritable("si",2);
+        private Decade2GramC1C2 shlomo = new Decade2GramC1C2(3, "shlomo", 0, 0, 0);
+        private StringIntWritable si = new StringIntWritable("si", 2);
         private final String stopWordsFileName = "stopWords" + new Date().getTime() + ".txt";
         fileContainsWord stopWordsFinder;
-//        @Override
+
+        //        @Override
         @Override
         public void setup(Context context) throws IOException {
             //this will be executed once on each mapper before first map(..) call
+
             S3ObjectOperations.getObject("ass2jar", "stopWords.txt", stopWordsFileName);
             stopWordsFinder = new fileContainsWord(stopWordsFileName);
-
 //            stopWordsFinder = new fileContainsWord("C:\\Users\\alons\\studies\\distributed_systems\\Distributed_Systems\\Collocation_Extraction\\stopWords.txt");
         }
 
@@ -74,26 +75,26 @@ public class C1Calculator {
 //        }
 
 
-        public void map(LongWritable key, Text value, Context context) throws IOException,  InterruptedException {
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             StringTokenizer itr = new StringTokenizer(value.toString());
             String w1 = null;
             String w2 = null;
             int count = 0;
             int decade = 0;
-            if(itr.countTokens() > 3){
+            if (itr.countTokens() > 3) {
                 w1 = itr.nextToken();
                 w2 = itr.nextToken();
                 String strYear = itr.nextToken();
-                try{
-                    decade = (Integer.parseInt(strYear.substring(0,3) + "0"));
-                } catch(Exception e){
+                try {
+                    decade = (Integer.parseInt(strYear.substring(0, 3) + "0"));
+                } catch (Exception e) {
                     System.err.println("strYear: " + strYear + "w1: " + w1 + "w2: " + w2);
                     e.printStackTrace();
                     System.exit(1);
                 }
                 count = Integer.parseInt(itr.nextToken());
             }
-            if (stopWordsFinder.contains(w1) || stopWordsFinder.contains(w2)){
+            if (stopWordsFinder.contains(w1) || stopWordsFinder.contains(w2)) {
                 return;
             }
             si.setStr(w2);
@@ -111,26 +112,24 @@ public class C1Calculator {
 
 
     public static class C1Combiner extends Reducer<Decade2GramC1C2, StringIntWritable, Decade2GramC1C2, StringIntWritable> {
-        public void reduce(Decade2GramC1C2 key, Iterable<StringIntWritable> values, Mapper.Context context) throws IOException,  InterruptedException{
+        public void reduce(Decade2GramC1C2 key, Iterable<StringIntWritable> values, Mapper.Context context) throws IOException, InterruptedException {
             int sum = 0;
             int decade = key.getDecade();
             int flag = key.getFlag();
             String word1 = key.getTwogram();
-            if (flag == 1){ // flag
+            if (flag == 1) { // flag
                 for (StringIntWritable value : values) {
                     sum += value.getNumber();
                 }
 
                 context.write(key, new StringIntWritable("*", sum));
-            }
-            else{
-                for (StringIntWritable value : values){
+            } else {
+                for (StringIntWritable value : values) {
                     context.write(key, value);
                 }
             }
         }
     }
-
 
 
     // alon, yotam(8), flag
@@ -143,27 +142,26 @@ public class C1Calculator {
     // if(!flag) write(alon, yotam(8) or (alon,gabi(11))
 
 
-
 //    combining all the strings is bad, since the reducer will need to create an array with o(n) words
 
     public static class ReducerClass extends Reducer<Decade2GramC1C2, StringIntWritable, Decade2GramC1C2, IntWritable> {
         private IntWritable num = new IntWritable(0);
         private int sum = 0;
-//        @Override
-        public void reduce(Decade2GramC1C2 key, Iterable<StringIntWritable> values, Context context) throws IOException,  InterruptedException {
+
+        //        @Override
+        public void reduce(Decade2GramC1C2 key, Iterable<StringIntWritable> values, Context context) throws IOException, InterruptedException {
             int decade = key.getDecade();
             int flag = key.getFlag();
             String word1 = key.getTwogram();
-            if (flag == 1){ // flag
+            if (flag == 1) { // flag
                 for (StringIntWritable value : values) {
                     sum += value.getNumber();
                 }
-            }
-            else{
-                for (StringIntWritable value : values){
+            } else {
+                for (StringIntWritable value : values) {
                     num.set(value.getNumber());
-                    context.write(new  Decade2GramC1C2(decade,word1 + " " + value.getStr(),
-                            sum,0,0), num);
+                    context.write(new Decade2GramC1C2(decade, word1 + " " + value.getStr(),
+                            sum, 0, 0), num);
                 }
                 sum = 0; // initilize sum again
             }
@@ -177,7 +175,7 @@ public class C1Calculator {
 //      }
 //    }
 
-   public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "c1_calculator");
         job.setJarByClass(C1Calculator.class);
@@ -190,13 +188,13 @@ public class C1Calculator {
         job.setOutputKeyClass(Decade2GramC1C2.class);
         job.setOutputValueClass(IntWritable.class);
 
-       // job.setInputFormatClass(SequenceFileInputFormat.class);
+        job.setInputFormatClass(SequenceFileInputFormat.class);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1] + new Date().getTime()));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
         System.exit(job.waitForCompletion(true) ? 0 : 1);
 
-   }
+    }
 
 }
 

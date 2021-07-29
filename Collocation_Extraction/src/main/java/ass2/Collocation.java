@@ -75,7 +75,7 @@ public class Collocation {
         job.setJarByClass(Collocation.class);
         job.setMapperClass(Collocation.MapperClass.class);
 //    job.setPartitionerClass(PartitionerClass.class);
-//    job.setCombinerClass(ReducerClass.class);
+        job.setCombinerClass(ReducerClass.class);
         job.setReducerClass(Collocation.ReducerClass.class);
 
         job.setMapOutputKeyClass(IntDoubleStringWritable.class);

@@ -68,8 +68,6 @@ public class NPMICalculator {
         private Decade2GramC1C2 last_input_key = new Decade2GramC1C2();
         private IntWritable last_input_value = new IntWritable(0);
 
-
-
         //        @Override
         public void reduce(Decade2GramC1C2 key, Iterable<IntWritable> values, Context context) throws IOException,  InterruptedException {
             int decade = key.getDecade();

@@ -84,9 +84,9 @@ public class Main {
         job.setMapOutputValueClass(mapOutputValue);
         job.setOutputKeyClass(outputKey);
         job.setOutputValueClass(outputValue);
-        if (first) {
-            job.setInputFormatClass(SequenceFileInputFormat.class);
-        }
+//        if (first) {
+//            job.setInputFormatClass(SequenceFileInputFormat.class);
+//        }
         FileInputFormat.addInputPath(job, new Path(inputPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
         if (last) {
