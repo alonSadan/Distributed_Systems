@@ -171,19 +171,19 @@ public class C1Calculator {
         }
     }
 
-    public static class PartitionerClass extends Partitioner<StringIntWritable, StringIntWritable> {
-      @Override
-      public int getPartition(StringIntWritable key, StringIntWritable value, int numPartitions) {
-        return ((key.getNumber() % 100) / 10) % numPartitions; // partition by decade
-      }
-    }
+//    public static class PartitionerClass extends Partitioner<StringIntWritable, StringIntWritable> {
+//      @Override
+//      public int getPartition(StringIntWritable key, StringIntWritable value, int numPartitions) {
+//        return ((key.getNumber() % 100) / 10) % numPartitions; // partition by decade
+//      }
+//    }
 
    public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "c1_calculator");
         job.setJarByClass(C1Calculator.class);
         job.setMapperClass(MapperClass.class);
-        job.setPartitionerClass(PartitionerClass.class);
+//        job.setPartitionerClass(PartitionerClass.class);
 //        job.setCombinerClass(C1Combiner.class);
         job.setReducerClass(ReducerClass.class);
         job.setMapOutputKeyClass(StringIntWritable.class);

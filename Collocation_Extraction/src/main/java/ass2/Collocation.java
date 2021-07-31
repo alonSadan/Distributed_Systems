@@ -63,12 +63,12 @@ public class Collocation {
         }
     }
 
-    public static class PartitionerClass extends Partitioner<IntDoubleStringWritable, Text> {
-        @Override
-        public int getPartition(IntDoubleStringWritable key, Text value, int numPartitions) {
-            return ((key.getInt() % 100) / 10) % numPartitions; // partition by decade
-        }
-    }
+//    public static class PartitionerClass extends Partitioner<IntDoubleStringWritable, Text> {
+//        @Override
+//        public int getPartition(IntDoubleStringWritable key, Text value, int numPartitions) {
+//            return ((key.getInt() % 100) / 10) % numPartitions; // partition by decade
+//        }
+//    }
 
 
     public static void main(String[] args) throws Exception {
@@ -76,9 +76,9 @@ public class Collocation {
         Job job = Job.getInstance(conf, "Collacation");
         job.setJarByClass(Collocation.class);
         job.setMapperClass(Collocation.MapperClass.class);
-        job.setPartitionerClass(PartitionerClass.class);
+//        job.setPartitionerClass(PartitionerClass.class);
 //        job.setCombinerClass(ReducerClass.class); // combiner = reducer
-        job.setReducerClass(Collocation.ReducerClass.class);
+        job.setReducerClass(ReducerClass.class);
         job.setMapOutputKeyClass(IntDoubleStringWritable.class);
         job.setMapOutputValueClass(Text.class);
         job.setOutputKeyClass(IntDoubleStringWritable.class);
