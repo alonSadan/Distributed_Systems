@@ -1,9 +1,9 @@
-#Collocation Extraction
+# Collocation Extraction
 
 In this assignment we automatically extract collocations from the Google 2-grams dataset using 
 Amazon Elastic Map Reduce.
 
-#Collocation
+# Collocation
 
 A collocation is a sequence of words or terms that co-occur more often than would be expected by 
 chance. The identification of collocations - such as 'crystal clear', 'cosmetic surgery', 'איכות סביבה - 'is 
@@ -12,7 +12,7 @@ In this assignment, we will use Normalized Pointwise Mutual Information (NPMI), 
 whether a given pair of ordered words is a collocation, where two ordered words with a high NPMI 
 value are expected to be a collocation.
 
-#Normalized PMI
+# Normalized PMI
 
 Pointwise mutual information (PMI) is a measure of association used in information theory and 
 statistics.
@@ -31,7 +31,7 @@ count of the ordered pair w1w2 (excluding w2w1 pairs), c(w1) as the number of ti
 bigram, c(w2) as the number of times w2 ends some bigram, and N as the number of bigrams.
 
 
-#The Assignment
+# The Assignment
 
 We provide a map-reduce job for collocation extraction for each decade, and run it in the 
 Amazon Elastic MapReduce service. The collocation criteria will be based on the normalized PMI 
@@ -51,12 +51,12 @@ The input of the program is the Hebrew 2-Gram dataset of Google Books Ngrams.
 The output of the program is a list of the collocations for each decade, and there npmi value, ordered 
 by their npmi (descending).
 
-#Stop Words
+# Stop Words
 Stop words are words which are filtered out prior to, or after, processing of natural language data.
 In this assignment, we remove all bigram that contain stop words and not include 
 them in our counts.
 
-#How To Run
+# How To Run
 The inputs for the assignment are the minPmi and relMinPmi mentioned above. Say that minPmi is 
 0.5 and relMinPmi is 0.2, the command line to execute the assignment should look like:
 
@@ -65,7 +65,10 @@ _java -jar ass2.jar ExtractCollations 0.5 0.2_
 #Scalability, Memory Assumptions
 no assumptions were made on the size of the input. it can be as large as needed, and the application will run the same way.
 
-#Steps Explanation
+# Outputs: 
+https://s3.console.aws.amazon.com/s3/object/ass2jar?region=us-east-1&prefix=output4/AGAIN_yescombiner_partition_to_folder/part-r-00000
+
+# Steps Explanation
 
 ##general explanation
 Our program consists of four steps: count CW1 for all words in each decade, count CW2 for all words in each decade, 
