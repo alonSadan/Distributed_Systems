@@ -18,12 +18,18 @@ Pointwise mutual information (PMI) is a measure of association used in informati
 statistics.
 Given two words w1 and w2 and a corpus, we define normalized pmi as follows:
 
+![image](https://user-images.githubusercontent.com/39271599/127744055-0f978bd8-6d6a-47d1-a3ad-b9b7ecd432ef.png)
 
+Where
+
+![image](https://user-images.githubusercontent.com/39271599/127744075-572d9209-7c74-4f65-bbb9-0d77f25d2d5f.png)
+
+![image](https://user-images.githubusercontent.com/39271599/127744094-18cc9e77-cb5d-4b1f-8f5b-a53d4153ff9b.png)
 
 According to conditional probability definition and maximum likelihood estimation, the PMI can be 
 expressed (think why) by:
 
-
+![image](https://user-images.githubusercontent.com/39271599/127744107-44b36e34-e46d-4cbf-b014-00934d4e71f4.png)
 
 Where c is count function and N is the total number of bi-grams in the corpus.
 In order to adapt it for the task of identifying collocations of ordered pairs, we define c(w1,w2) as the 
