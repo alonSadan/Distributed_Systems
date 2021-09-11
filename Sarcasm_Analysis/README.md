@@ -16,7 +16,8 @@ Unzip the file <file name> and run `java -jar local-1.0-jar-with-dependencies.ja
 
 ## How it works
 
-The app is built of three main parts: _Local_, _Manager_, _Worker_.  
+The app is built of three main parts: _Local_, _Manager_, _Worker_. 
+(what the app actually does depends on _Worker_, but that is not the main issue. the important aspect of this project is the distributed system implementation).
 _Local_ creates the _manager_(if it doesn't already exists) and send it the input files,
 for processing.  
 The Manager gets the inputs, creates processing tasks and delegates them to the workers.  
