@@ -103,8 +103,11 @@ word5	word6	1977	3
 
 mapper:
 if not stop-word {
+
 	write(<<1980, flag:1, word1> <word2,4> >)
+	
     write(<<1980, flag:0, word1> <word2,4> >)
+    
    }
 
 
@@ -137,7 +140,9 @@ shuffle and sort input:
 shuffle and sort: 
 
 	first deacde
+	
 	then word
+	
 	then flag
 
 reducer input : 
@@ -162,11 +167,13 @@ int cw1 = sum of input.values-iterator
 >pair and use the flag to differentiate between them.  
 
 for each value in input.values-iterator:
-	write(<<1980, input.key.word, cw1, input.value.word >  input.value.count >    //example:  <<1980, word1,10 , word2> 4 >
-								        //  <<1980, word1,10 , word7> 6 >
+
+	write(<<1980, input.key.word, cw1, input.value.word > 		 input.value.count >    //example:  <<1980, word1,10 , word2> 4 >
+								       		 //  <<1980, word1,10 , word7> 6 >
 
 
 -------- second map reduce step: calculate CW2 for all words in each decade------------------------------------------------------
+
 the second mapper (example)  input:
 
 <<1980, word1, 10 > <word2, 4 >>
@@ -192,7 +199,9 @@ write(<<1980, flag:0,  word2> , <word1,CW1=10, count=4>>)
 shuffle and sort: 
 
 	first deacde
+	
 	then word2
+	
 	then flag
 	
 reducer input : 
@@ -202,12 +211,15 @@ reducer input :
 	<<1980,flag:0, word2> ,[<word1,C1=10, count=4>,  <word8,CW1=15, count=3> ...] >
 
 combiner: 
+
 sums up all the values for keys with flag=1, for flag=0 it is not possible.
     
 reducer:
 
 if input.flag == 1{  
+
 int cw2 = sum of input.values-iterator
+
 }
 
 reducer output: 
@@ -253,6 +265,7 @@ shuffle and sort:
 	first by decade,	
 	
 	then by twogram:
+	
 		first #N#, then word-word
 
 reducer input:
@@ -282,33 +295,42 @@ combiner:
     
 reducer:   //has a private fields: N=0,  decade_NPMI = 0, curr_decade = 0, last_input;
 
-if(input.key.twogram == #N#) {   
+if(input.key.twogram == #N#) { 
+
 	this.N = sum(input.key.counts)
 }
 
 > the shuffle and sort assures that all #N# keys will get to the reducer first
 
 if curr_decade != input.key.decade  {  			// start of new deacade
+
 	if (curr_deacde !=0){       // NOT start of program
+	
 		write(<<last_input.key.decade, * *>decade_NPMI>)
 	}
 
 
 decade_NPMI = 0;
+
 curr_decade = input.key.decade
 
 }
 
 
 C_w1w2 = input.getC1C2()
+
 P_w1w2 = C_w1w2/N
+
 C_w1 = input.getC1()
+
 C_w2 = input,getC2()
+
 PMI_w1w2 = LOG(C_w1w2) + LOG(N) - LOG(C_w1)-LOG(C_w2)
 
 NPMI_w1w2 = PMI_w1w2/(-)LOG(P_w1w2)
 
 write(<<input.key.decade, w1w2,> NPMI_w1w2 >)
+
 decade_NPMI += NPMI_w1w2 
 				
 
@@ -316,7 +338,8 @@ last_input= input
 }
 
 
-cleanup:  
+cleanup: 
+
 > when we get to the end of the input we need to write one last time the decade_NPMI 
 	
 write(<<last_input.key.decade, * *>decade_NPMI>)
@@ -346,11 +369,15 @@ for each input:
 >	for each decade we will do once :	write(<<1970, 120.6, * *> not-interesting >)
 
 combiner:
+
 the same as the reducer 
 
 shuffle and sort:
+
 	decade
+	
 	then * *
+	
 	then NPMI     
 		
 
@@ -370,10 +397,13 @@ reducer input:
 reducer:  //has private field  decade_NPMI=0
 
 if(input.key.second  == * * ) {
+
 	decade_NPMI = input.val
 }
 else{
+
 if (isCollocation(input, decade_NPMI, MIN_PMI, REL_PMI) ) {   // MIN_PMI and REL_PMI are inputs to main
+
 		write(<<decade input.key> >)
 }
 }
