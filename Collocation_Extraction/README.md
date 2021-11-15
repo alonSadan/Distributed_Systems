@@ -75,10 +75,9 @@ https://s3.console.aws.amazon.com/s3/object/ass2jar?region=us-east-1&prefix=outp
 
 # Steps Explanation
 
-##general explanation
 Our program consists of four steps: count CW1 for all words in each decade, count CW2 for all words in each decade, 
-calculate the NPMI and last  filter the collocations and sort the results. below there is the program flow scheme 
-with examples inputs and outputs.
+calculate the NPMI and last filter the collocations and sort the results. below there is the program flow scheme 
+with example inputs and outputs.
 
 
 -------- first map reduce step: calculate CW1 for all words in each decade------------------------------------------------------
