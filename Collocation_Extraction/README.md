@@ -49,17 +49,16 @@ collocation.
 normalized pmi in the same decade (including those which their normalized PMI is less 
 than minPmi), is equal or greater than the given relative minimal PMI value (denoted by 
 relMinPmi), the given pair of two ordered words is considered to be a collocation.
-Your map-reduce job will get the minPmi and the relMinPmi values as parameters.
-You need to calculate the normalized pmi of each pair of words in each decade, and display all 
-collations above each of the two minimum inputs. Run your experiments on the 2-grams Hebrew
-corpus.
+Our map-reduce job gets the minPmi and the relMinPmi values as parameters.
+We calculate the normalized pmi of each pair of words in each decade, and display all 
+collations above each of the two minimum inputs.
 The input of the program is the Hebrew 2-Gram dataset of Google Books Ngrams.
 The output of the program is a list of the collocations for each decade, and there npmi value, ordered 
 by their npmi (descending).
 
 # Stop Words
 Stop words are words which are filtered out prior to, or after, processing of natural language data.
-In this assignment, we remove all bigram that contain stop words and not include 
+In this assignment, we remove all bigrams that contain stop words and not include 
 them in our counts.
 
 # How To Run
