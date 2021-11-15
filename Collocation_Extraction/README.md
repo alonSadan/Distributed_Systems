@@ -84,12 +84,18 @@ with example inputs and outputs.
 map input :   
 
 word1	word2	1987	4
+
 word1	word2	1981	3
 
+
 word3	word4	1988	5
+
 word5	word6	1989	6
+
 word1	word2	1975	1
+
 word3	word4	1976	2
+
 word5	word6	1977	3
 	.
 	.
@@ -106,15 +112,22 @@ if not stop-word {
 shuffle and sort input:
 
 <<1980,flag:1, word1> <word2,4>  >
+
 <<1980,flag:0, word1> <word2,4>  >
 
+
 <<1980, flag:1,word3> <word3,7> >
+
 <<1980, flag:0,word3> <word3,7> >
 
+
 <<1980, flag:1,word6> <word2,4> >
+
 <<1980, flag:0,word6> <word2,4> >
 
+
 <<1980, flag:1,word1> <word7,6> >
+
 <<1980, flag:0,word1> <word7,6> >
 
              .
@@ -130,6 +143,7 @@ shuffle and sort:
 reducer input : 
             
 <<1980, flag:1, word1> [word2-4 word7-6 , word2-3...] >
+
 <<1980, flag:0, word1> [word2-4 word7-6 , word2-3...] >
     .
     .
@@ -156,19 +170,23 @@ for each value in input.values-iterator:
 the second mapper (example)  input:
 
 <<1980, word1, 10 > <word2, 4 >>
+
 <<1980, word1,10> <word7,  6>>
+
 <<1980, word1, 10 > <word2, 3> >
 
 	^
 	^
 	^
  <<1980, word4-85> <word7, 6>>
+ 
  <<1980, word4-85> <word11,9>>
 
 
 next mapper: 
 	
  write(<<1980, flag:1, word2> ,<word1,CW1=10, count=4>>)
+ 
 write(<<1980, flag:0,  word2> , <word1,CW1=10, count=4>>)
 
 shuffle and sort: 
@@ -180,6 +198,7 @@ shuffle and sort:
 reducer input : 
 
 	<<1980,flag:1, word2> ,[<word1,C1=10, count=4>,  <word8,CW1=15, count=3> ...] >
+	
 	<<1980,flag:0, word2> ,[<word1,C1=10, count=4>,  <word8,CW1=15, count=3> ...] >
 
 combiner: 
@@ -205,11 +224,16 @@ reducer output:
 map input :    
 
 word1	word2	1980	4  24  56
-word3	word4	1980	5   13  87   
+
+word3	word4	1980	5   13  87  
+
 word5	word6	1980	6   45  74
 
+
 word1	word2	1970	1   12  18  
+
 word3	word4	1970	2   68  31  
+
 word5	word6	1970	3   2   87
 	.
 	.
@@ -218,6 +242,7 @@ word5	word6	1970	3   2   87
 for each map input:
 
 	write (<< 1980, word1word2, cw1=11, cw2=15> cw1w2=4  >)
+	
 	write(<<1980,#N#>1> )
 	
 > we use #N# to count all the words in the corpus
@@ -243,7 +268,9 @@ reducer input:
 
 
 	<<1970,word1word2 cw1=11, cw2=15>  [4 , 8 ,1...]   >
+	
 	<<1970,word1word4, cw1 =1 , cw4=11,> [11, 2, 17]>
+	
 	<<1970,word1word5 cw1=4 , cw5=7, >  [12 , 3, 5] >
 	
 		^
@@ -300,7 +327,9 @@ write(<<last_input.key.decade, * *>decade_NPMI>)
 map input example:
 
 1970 	w1	w2	0.8
+
 1970 	w3	w4	0.1
+
 1970 	w1	w3	0.3
 		^
 		^	
